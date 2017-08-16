@@ -592,7 +592,9 @@ void AFPSGameState::Update()
 
 
 						CallHUDUpdate();
+
 						Player->OnPlayerDeath();
+	
 
 
 						//TheHUD->AddMessageEvent();

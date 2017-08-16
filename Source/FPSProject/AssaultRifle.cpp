@@ -17,6 +17,7 @@ AAssaultRifle::AAssaultRifle()
 	GetStaticMeshComponent()->SetSimulatePhysics(true);
 	GetStaticMeshComponent()->SetEnableGravity(true);
 	IsProjectile = false;
+	BulletForce = 10.0f;
 	IsAutomatic = true;
 	IsBurst = false;
 	FireRate = 0.1f;

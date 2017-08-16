@@ -48,6 +48,8 @@ public:
 		int32 BulletsPerBurst;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		float FireRate;
+	UPROPERTY(Replicated,EditAnywhere, Category = "Weapon")
+		float BulletForce;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		float ReloadTime;
 	UPROPERTY(EditAnywhere, Category = "Weapon")

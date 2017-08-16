@@ -128,6 +128,7 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 	GetMesh()->WakeAllRigidBodies();
 	GetMesh()->bBlendPhysics = true;
 	GetMesh()->SetOwnerNoSee(false);
+
 	//disable movement
 	GetCharacterMovement()->StopMovementImmediately();
 	GetCharacterMovement()->DisableMovement();
@@ -135,6 +136,11 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 	//disable collisions on the capsule
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	if (LastHitBone != "" && LastHitForce != NULL && LastHitDirection != FVector::ZeroVector)
+	{
+		UE_LOG(LogClass, Log, TEXT("AddedForce!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+		GetMesh()->AddForce(LastHitDirection * LastHitForce,LastHitBone);
+	}
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		if (Iterator->Get()->AcknowledgedPawn == this) {
@@ -416,7 +422,8 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 									}
 									UE_LOG(LogClass, Log, TEXT("DamagePercent: %f"), DamagePercent);
 									hitplayer->Shooter = this;
-
+									FVector BulletTrailDir = FVector(testhit.Location - testhit.TraceStart).GetSafeNormal();
+									hitplayer->SetHitData(CurrentPrimary->BulletForce, testhit.BoneName, BulletTrailDir);
 									hitplayer->ServerChangeHealthBy(-CurrentPrimary->BulletDamage * DamagePercent);
 									hitplayer->TriggerUpdateUI();
 									//UE_LOG(LogClass, Log, FString::SanitizeFloat(hitplayer->GetCurrentHealth());
@@ -483,7 +490,8 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 										}
 									}
 									hitplayer->ServerChangeHealthBy(-CurrentPrimary->BulletDamage * DamagePercent);
-
+									FVector BulletTrailDir = FVector(testhit.Location - testhit.TraceStart).GetSafeNormal();
+									hitplayer->SetHitData(CurrentPrimary->BulletForce, testhit.BoneName, BulletTrailDir);
 									UE_LOG(LogClass, Log, TEXT("DamagePercent: %f"), DamagePercent);
 									hitplayer->Shooter = this;
 
@@ -646,7 +654,12 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 		}
 	}
 }
-
+void AFPSCharacter::SetHitData_Implementation(float Force, FName Bone, FVector Direction)
+{
+	LastHitForce = Force;
+	LastHitBone = Bone;
+	LastHitDirection = Direction;
+}
 void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -656,6 +669,9 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFPSCharacter, CurrentPrimary);
 	DOREPLIFETIME(AFPSCharacter, AccuracySpreadValue);
 	DOREPLIFETIME(AFPSCharacter, IsZoomed);
+	DOREPLIFETIME(AFPSCharacter, LastHitBone);
+	DOREPLIFETIME(AFPSCharacter, LastHitForce);
+	DOREPLIFETIME(AFPSCharacter, LastHitDirection);
 
 }
 

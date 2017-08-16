@@ -36,6 +36,7 @@ void AGun::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProp
 	DOREPLIFETIME(AGun, TotalAmmo);
 	DOREPLIFETIME(AGun, MagazineSize);
 	DOREPLIFETIME(AGun, CanFire);
+	DOREPLIFETIME(AGun, BulletForce);
 	DOREPLIFETIME(AGun, IsReloading);
 }
 

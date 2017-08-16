@@ -72,11 +72,17 @@ public:
 		void ServerChangeHealthBy(float delta);
 	//required network scaffolding
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-
+	UPROPERTY(Replicated, EditAnywhere, Category = "Damage")
+		float LastHitForce;
+	UPROPERTY(Replicated, EditAnywhere, Category = "Damage")
+		FName LastHitBone;
+	UPROPERTY(Replicated, EditAnywhere, Category = "Damage")
+		FVector LastHitDirection;
 	// shut down the pawn and ragdoll it on all clients
 	UFUNCTION(NetMultiCast, Reliable) //multicast function happens on server and clients so everyone will see the player ragdoll
 		void OnPlayerDeath();
+	UFUNCTION(NetMultiCast, Reliable) //multicast function happens on server and clients so everyone will see the player ragdoll
+		void SetHitData(float Force,FName Bone,FVector Direction);
 
 protected:
 	// Called when the game starts or when spawned
