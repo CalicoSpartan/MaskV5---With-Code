@@ -73,53 +73,56 @@ void AFPSProjectGameModeBase::RespawnPlayer(APlayerController* NewPlayer)
 								if (AFPSPlayerController* NewFPSPlayer = Cast<AFPSPlayerController>(NewPlayer))
 								{
 
-
-									if (PlayerController->GetPlayerTeam() != NewFPSPlayer->GetPlayerTeam())
-									{
-										AFPSCharacter* PlayerCharacter = Cast<AFPSCharacter>(PlayerController->GetPawn());
-										if (PlayerCharacter) {
-											UCameraComponent* PlayerCamera = Cast<UCameraComponent>(PlayerCharacter->FPSCameraComponent);
-											if (PlayerCamera)
+									if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(PlayerController->PlayerState)) {
+										if (AFPSPlayerState* fpsplayerstate = Cast<AFPSPlayerState>(NewFPSPlayer->PlayerState)) {
+											if (playerstate->Team != fpsplayerstate->Team)
 											{
-												FVector CameraLocation = PlayerCamera->GetComponentLocation();
-												FVector SpawnPointLocation = PlayerStart->GetActorLocation();
-												FVector DirectionBetween = (SpawnPointLocation - CameraLocation).GetSafeNormal();
-												FVector CameraDirection = PlayerCamera->GetForwardVector().GetSafeNormal();
-												float dotvalue = FGenericPlatformMath::Abs(FVector::DotProduct(DirectionBetween, CameraDirection));
-
-												if (dotvalue > .68f) {
-
-
-													FHitResult hit;
-
-													if (GetWorld()->LineTraceSingleByChannel(hit, CameraLocation, CameraLocation + (DirectionBetween * 10000), ECollisionChannel::ECC_Camera))
+												AFPSCharacter* PlayerCharacter = Cast<AFPSCharacter>(PlayerController->GetPawn());
+												if (PlayerCharacter) {
+													UCameraComponent* PlayerCamera = Cast<UCameraComponent>(PlayerCharacter->FPSCameraComponent);
+													if (PlayerCamera)
 													{
+														FVector CameraLocation = PlayerCamera->GetComponentLocation();
+														FVector SpawnPointLocation = PlayerStart->GetActorLocation();
+														FVector DirectionBetween = (SpawnPointLocation - CameraLocation).GetSafeNormal();
+														FVector CameraDirection = PlayerCamera->GetForwardVector().GetSafeNormal();
+														float dotvalue = FGenericPlatformMath::Abs(FVector::DotProduct(DirectionBetween, CameraDirection));
+
+														if (dotvalue > .68f) {
 
 
-														if (AFPSPlayerStart* spawnpoint = Cast<AFPSPlayerStart>(hit.GetActor())) {
+															FHitResult hit;
+
+															if (GetWorld()->LineTraceSingleByChannel(hit, CameraLocation, CameraLocation + (DirectionBetween * 10000), ECollisionChannel::ECC_Camera))
+															{
+
+
+																if (AFPSPlayerStart* spawnpoint = Cast<AFPSPlayerStart>(hit.GetActor())) {
+
+																}
+																else {
+
+
+																	PreferredStarts.AddUnique(*PlayerStart);
+																}
+															}
+
+															if (i >= 3) {
+																UE_LOG(LogClass, Log, TEXT("Respawning anyway"));
+																PreferredStarts.AddUnique(*PlayerStart);
+															}
 
 														}
-														else {
+														else
+														{
+															if (FVector::Dist(CameraLocation, SpawnPointLocation) > SafeSpawnDistance || i >= 3) {
+																PreferredStarts.AddUnique(*PlayerStart);
+															}
 
-
-															PreferredStarts.AddUnique(*PlayerStart);
 														}
-													}
 
-													if (i >= 3) {
-														UE_LOG(LogClass, Log, TEXT("Respawning anyway"));
-														PreferredStarts.AddUnique(*PlayerStart);
 													}
-
 												}
-												else
-												{
-													if (FVector::Dist(CameraLocation, SpawnPointLocation) > SafeSpawnDistance || i >= 3) {
-														PreferredStarts.AddUnique(*PlayerStart);
-													}
-
-												}
-
 											}
 										}
 									}
@@ -152,23 +155,28 @@ void AFPSProjectGameModeBase::RespawnPlayer(APlayerController* NewPlayer)
 					if (PlayerController != NewPlayer) {
 						if (AFPSPlayerController* NewFPSPlayer = Cast<AFPSPlayerController>(NewPlayer))
 						{
-							if (PlayerController->GetPlayerTeam() != NewFPSPlayer->GetPlayerTeam())
-							{
-
-
-								AFPSCharacter* PlayerCharacter = Cast<AFPSCharacter>(PlayerController->GetPawn());
-								if (PlayerCharacter) {
-									UCameraComponent* PlayerCamera = Cast<UCameraComponent>(PlayerCharacter->FPSCameraComponent);
-									if (PlayerCamera)
+							if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(PlayerController->PlayerState)) {
+								if (AFPSPlayerState* fpsplayerstate = Cast<AFPSPlayerState>(NewFPSPlayer->PlayerState)) {
+									if (playerstate->Team != fpsplayerstate->Team)
 									{
-										FVector CameraLocation = PlayerCamera->GetComponentLocation();
-										FVector SpawnPointLocation = PreferredStarts[i]->GetActorLocation();
-										if (FVector::Dist(CameraLocation, SpawnPointLocation) > SpawnDistance)
-										{
-											BestStart = PreferredStarts[i];
-											SpawnDistance = FVector::Dist(CameraLocation, SpawnPointLocation);
+
+
+										AFPSCharacter* PlayerCharacter = Cast<AFPSCharacter>(PlayerController->GetPawn());
+										if (PlayerCharacter) {
+											UCameraComponent* PlayerCamera = Cast<UCameraComponent>(PlayerCharacter->FPSCameraComponent);
+											if (PlayerCamera)
+											{
+												FVector CameraLocation = PlayerCamera->GetComponentLocation();
+												FVector SpawnPointLocation = PreferredStarts[i]->GetActorLocation();
+												if (FVector::Dist(CameraLocation, SpawnPointLocation) > SpawnDistance)
+												{
+													BestStart = PreferredStarts[i];
+													SpawnDistance = FVector::Dist(CameraLocation, SpawnPointLocation);
+												}
+											}
 										}
 									}
+
 								}
 							}
 						}
@@ -215,187 +223,123 @@ void AFPSProjectGameModeBase::RespawnPlayer(APlayerController* NewPlayer)
 
 void AFPSProjectGameModeBase::StartNewPlayerClient(APlayerController* NewPlayer)
 {
-	
-	if (AFPSGameState* MyGameState = Cast<AFPSGameState>(GameState))
-	{
-		MyGameState->SetNumberOfPlayers(GetNumPlayers());
-	}
-	NewPlayer->GetPawn()->Destroy();
-	AFPSPlayerController* TestPlayerController = Cast<AFPSPlayerController>(NewPlayer);
-	TArray<AFPSPlayerStart*> PreferredStarts;
-	bool BlockCheck = true;
-	for (int32 i = 0; i < 2; ++i) {
-
-		for (TActorIterator<AFPSPlayerStart> PlayerStart(GetWorld()); PlayerStart; ++PlayerStart)
+	if (AFPSPlayerState* NewPlayerState = Cast<AFPSPlayerState>(NewPlayer->PlayerState)) {
+		if (NewPlayerState->Team != NULL)
 		{
 
-			if (TestPlayerController)
-			{
-				if (TestPlayerController->GetPlayerTeam() == 1 && PlayerStart->Tags.Contains("Team1")) //&& PlayerStart->PlayerStartTag != FName(TEXT("Blocked")))
-				{
-					if (PlayerStart->PlayerStartTag == FName(TEXT("Blocked"))) {
-						if (BlockCheck == false) {
-
-							PreferredStarts.AddUnique(*PlayerStart);
-						}
-						else {
-
-						}
-
-					}
-					else
-					{
-
-						PreferredStarts.AddUnique(*PlayerStart);
-					}
-					// Player should spawn on CT.
 
 
-				}
-				else if (TestPlayerController->GetPlayerTeam() == 2 && PlayerStart->Tags.Contains("Team2")) //&& PlayerStart->PlayerStartTag != FName(TEXT("Blocked")))
-				{
-					if (PlayerStart->PlayerStartTag == FName(TEXT("Blocked"))) {
-						if (BlockCheck == false) {
 
-							PreferredStarts.AddUnique(*PlayerStart);
-						}
-						else {
-
-						}
-
-					}
-					else {
-
-						PreferredStarts.AddUnique(*PlayerStart);
-					}
-					// Player should spawn on Suspects
-
-
-				}
-
-			}
-
-		}
-		if (PreferredStarts.Num() == 0) {
-			BlockCheck = false;
-		}
-		else {
-			break;
-		}
-
-	}
-	if (TestPlayerController && TestPlayerController->GetPlayerTeam() == 0)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "Player is a spectator");
-		return;
-	}
-	else
-	{
-		if (TestPlayerController) {
-			if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(TestPlayerController->PlayerState))
-			{
-				if (ps->TeamNumber == 1)
-				{
-					if (ABaseTeam* Team1 = Cast<ABaseTeam>(Teams[0])) {
-						Team1->TeamPlayerStates.Add(ps);
-						ps->SetTeam(Team1);
-					}
-				}
-				if (ps->TeamNumber == 2)
-				{
-					if (ABaseTeam* Team2 = Cast<ABaseTeam>(Teams[1])) {
-						Team2->TeamPlayerStates.Add(ps);
-						ps->SetTeam(Team2);
-					}
-				}
-			}
-		}
-
-
-		//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "Player has selected a Team");
-		int32 PlayerStartIndex = FMath::RandRange(0, PreferredStarts.Num() - 1);
-		NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, PreferredStarts[PlayerStartIndex]));
-		PreferredStarts[PlayerStartIndex]->PlayerStartTag = FName(TEXT("Blocked"));
-
-		RestartPlayer(NewPlayer);
-		AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
-		if (Character)
-		{
-			Character->TriggerAddUI();
-
-		}
-
-		if (TestPlayerController)
-		{
 			if (AFPSGameState* MyGameState = Cast<AFPSGameState>(GameState))
 			{
-				MyGameState->ClientUpdateNumberOfTeams(NumberOfTeams);
-				//TestPlayerController->TriggerAddAliveUI();
+				MyGameState->SetNumberOfPlayers(GetNumPlayers());
 			}
-			//TestPlayerController->TriggerAddAliveUI();
-		}
+			NewPlayer->GetPawn()->Destroy();
+			AFPSPlayerController* TestPlayerController = Cast<AFPSPlayerController>(NewPlayer);
+			TArray<AFPSPlayerStart*> PreferredStarts;
+			bool BlockCheck = true;
+			for (int32 i = 0; i < 2; ++i) {
 
-	}
-	//UE_LOG(LogClass, Log, TEXT("NumberofPlayers: %d"), GetNumPlayers());
-	if (Team1PlayerControllers.Num() + Team2PlayerControllers.Num() == GetNumPlayers() - 1)
-	{
-		UE_LOG(LogClass, Log, TEXT("Totalcontrollers: %d"), Team1PlayerControllers.Num() + Team2PlayerControllers.Num());
-		UE_LOG(LogClass, Log, TEXT("Team1: %d"), Team1PlayerControllers.Num());
-		UE_LOG(LogClass, Log, TEXT("Team2: %d"), Team2PlayerControllers.Num());
-	}
-	
-	if (Team1PlayerControllers.Num() + Team2PlayerControllers.Num() == GetNumPlayers())
-	{
-		/*
-		UE_LOG(LogClass, Log, TEXT("PUTTERSLOVE"));
-		if (AFPSGameState* MyGameState = Cast<AFPSGameState>(GameState))
-		{
-			if (MyGameState->Team1PlayerControllers.Num() == Team1PlayerControllers.Num() && MyGameState->Team2PlayerControllers.Num() == Team2PlayerControllers.Num())
+				for (TActorIterator<AFPSPlayerStart> PlayerStart(GetWorld()); PlayerStart; ++PlayerStart)
+				{
+
+					if (TestPlayerController)
+					{
+						
+
+						if (NewPlayerState->Team->TeamNumber == 1 && PlayerStart->Tags.Contains("Team1")) //&& PlayerStart->PlayerStartTag != FName(TEXT("Blocked")))
+						{
+							if (PlayerStart->PlayerStartTag == FName(TEXT("Blocked"))) {
+								if (BlockCheck == false) {
+
+									PreferredStarts.AddUnique(*PlayerStart);
+								}
+								else {
+
+								}
+
+							}
+							else
+							{
+
+								PreferredStarts.AddUnique(*PlayerStart);
+							}
+							// Player should spawn on CT.
+
+
+						}
+						else if (NewPlayerState->Team->TeamNumber == 2 && PlayerStart->Tags.Contains("Team2")) //&& PlayerStart->PlayerStartTag != FName(TEXT("Blocked")))
+						{
+							if (PlayerStart->PlayerStartTag == FName(TEXT("Blocked"))) {
+								if (BlockCheck == false) {
+
+									PreferredStarts.AddUnique(*PlayerStart);
+								}
+								else {
+
+								}
+
+							}
+							else {
+
+								PreferredStarts.AddUnique(*PlayerStart);
+							}
+							// Player should spawn on Suspects
+
+
+						}
+						
+
+					}
+
+				}
+				if (PreferredStarts.Num() == 0) {
+					BlockCheck = false;
+				}
+				else {
+					break;
+				}
+
+			}
+			if (NewPlayerState->Team->TeamNumber == 0)
 			{
-				for (int32 i = 0; i < MyGameState->Team1PlayerStates.Num(); ++i)
-				{
-					if (AFPSPlayerState* PlayerState = Cast<AFPSPlayerState>(MyGameState->Team1PlayerStates[i]))
-					{
-
-						FString newName = "Team1Player[" + FString::FromInt(i) + "]";
-						PlayerState->SetUserNameMultiCast(FName(*newName));
-						UE_LOG(LogClass, Log, TEXT("SetTeam1PlayerName"));
-					}
-					else
-					{
-						UE_LOG(LogClass, Log, TEXT("FailedtoCastTeam1"));
-					}
-
-				}
-				UE_LOG(LogClass, Log, TEXT("there are %d team 2 player states"), MyGameState->Team1PlayerStates.Num());
-				for (int32 i = 0; i < MyGameState->Team2PlayerStates.Num(); ++i)
-				{
-					if (AFPSPlayerState* PlayerState = Cast<AFPSPlayerState>(MyGameState->Team2PlayerStates[i]))
-					{
-
-						FString newName = "Team2Player[" + FString::FromInt(i) + "]";
-						PlayerState->SetUserNameMultiCast(FName(*newName));
-						UE_LOG(LogClass, Log, TEXT("SetTeam2PlayerName"));
-
-					}
-					else
-					{
-						UE_LOG(LogClass, Log, TEXT("FailedtoCastTeam2"));
-					}
-
-				}
-				//MyGameState->Team1PlayerControllers = Team1PlayerControllers;
-				//MyGameState->Team2PlayerControllers = Team2PlayerControllers;
-				UE_LOG(LogClass, Log, TEXT("GameStateUpdated"));
-				for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-				{
-					AFPSPlayerController* PC = Cast<AFPSPlayerController>(*It);
-					PC->AddScoreBoardUI();
-					PC->TriggerAddAliveUI();
-				}
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "Player is a spectator");
+				return;
 			}
+			else
+			{
+
+
+					
+				
+
+
+				//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "Player has selected a Team");
+				int32 PlayerStartIndex = FMath::RandRange(0, PreferredStarts.Num() - 1);
+				NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, PreferredStarts[PlayerStartIndex]));
+				PreferredStarts[PlayerStartIndex]->PlayerStartTag = FName(TEXT("Blocked"));
+
+				RestartPlayer(NewPlayer);
+				AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
+				if (Character)
+				{
+					Character->TriggerAddUI();
+
+				}
+
+				if (TestPlayerController)
+				{
+					if (AFPSGameState* MyGameState = Cast<AFPSGameState>(GameState))
+					{
+						MyGameState->ClientUpdateNumberOfTeams(NumberOfTeams);
+						//TestPlayerController->TriggerAddAliveUI();
+					}
+					//TestPlayerController->TriggerAddAliveUI();
+				}
+
+			}
+
 		}
-		*/
 	}
 	
 
@@ -451,7 +395,7 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 			Team1Players += 1;
 			if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(TestPlayerController->PlayerState))
 			{
-				ps->TeamNumber = 1;
+				//ps->TeamNumber = 1;
 				if (ABaseTeam* Team1 = Cast<ABaseTeam>(Teams[0]))
 				{
 					//Team1->TeamNumber = 1;
@@ -485,7 +429,7 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 			Team2Players += 1;
 			if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(TestPlayerController->PlayerState))
 			{
-				ps->TeamNumber = 2;
+				//ps->TeamNumber = 2;
 				if (ABaseTeam* Team2 = Cast<ABaseTeam>(Teams[1]))
 				{
 					//Team2->TeamNumber = 2;
@@ -504,60 +448,7 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 					MyGameState->ClientUpdateTeam2PlayerStates(ps);
 				}
 			}
-			/*
-			if (Team1PlayerControllers.Num() + Team2PlayerControllers.Num() == GetNumPlayers())
-			{
-				UE_LOG(LogClass, Log, TEXT("PUTTERSLOVE"));
-				if (AFPSGameState* MyGameState = Cast<AFPSGameState>(GameState))
-				{
-					if (MyGameState->Team1PlayerControllers.Num() == Team1PlayerControllers.Num() && MyGameState->Team2PlayerControllers.Num() == Team2PlayerControllers.Num())
-					{
-						for (int32 i = 0; i < MyGameState->Team1PlayerStates.Num(); ++i)
-						{
-							if (AFPSPlayerState* PlayerState = Cast<AFPSPlayerState>(MyGameState->Team1PlayerStates[i]))
-							{
-
-								FString newName = "Team1Player[" + FString::FromInt(i) + "]";
-								PlayerState->SetUserNameMultiCast(FName(*newName));
-								UE_LOG(LogClass, Log, TEXT("SetTeam1PlayerName"));
-							}
-							else
-							{
-								UE_LOG(LogClass, Log, TEXT("FailedtoCastTeam1"));
-							}
-
-						}
-						UE_LOG(LogClass, Log, TEXT("there are %d team 2 player states"), MyGameState->Team1PlayerStates.Num());
-						for (int32 i = 0; i < MyGameState->Team2PlayerStates.Num(); ++i)
-						{
-							if (AFPSPlayerState* PlayerState = Cast<AFPSPlayerState>(MyGameState->Team2PlayerStates[i]))
-							{
-
-								FString newName = "Team2Player[" + FString::FromInt(i) + "]";
-								PlayerState->SetUserNameMultiCast(FName(*newName));
-								UE_LOG(LogClass, Log, TEXT("SetTeam2PlayerName"));
-
-							}
-							else
-							{
-								UE_LOG(LogClass, Log, TEXT("FailedtoCastTeam2"));
-							}
-
-						}
-						//MyGameState->Team1PlayerControllers = Team1PlayerControllers;
-						//MyGameState->Team2PlayerControllers = Team2PlayerControllers;
-						UE_LOG(LogClass, Log, TEXT("GameStateUpdated"));
-						for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-						{
-							AFPSPlayerController* PC = Cast<AFPSPlayerController>(*It);
-							PC->AddScoreBoardUI();
-							PC->TriggerAddAliveUI();
-						}
-					}
-				}
-
-			}
-			*/
+			
 			UE_LOG(LogClass, Log, TEXT("Team1PlayerControllerslength: %d"), Team1PlayerControllers.Num());
 			UE_LOG(LogClass, Log, TEXT("Team2PlayerControllerslength: %d"), Team2PlayerControllers.Num());
 
@@ -574,7 +465,15 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 						if (Team1Players > Team2Players) {
 							if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(PlayerController->PlayerState))
 							{
-								ps->TeamNumber = 2;
+								//ps->TeamNumber = 2;
+								if (ABaseTeam* Team2 = Cast<ABaseTeam>(Teams[1]))
+								{
+									//Team2->TeamNumber = 2;
+									Team2->TeamPlayerStates.Add(ps);
+									Team2->TeamColor = FColor::Red;
+									ps->SetTeam(Team2);
+									
+								}
 							}
 							PlayerController->ServerSetPlayerTeamClient(2);
 
@@ -657,7 +556,15 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 							Team1Players++;
 							if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(PlayerController->PlayerState))
 							{
-								ps->TeamNumber = 1;
+								//ps->TeamNumber = 1;
+								if (ABaseTeam* Team1 = Cast<ABaseTeam>(Teams[0]))
+								{
+									//Team2->TeamNumber = 2;
+									Team1->TeamPlayerStates.Add(ps);
+									Team1->TeamColor = FColor::Blue;
+									ps->SetTeam(Team1);
+									UE_LOG(LogClass, Log, TEXT("added to team number 2 player states"));
+								}
 							}
 							PlayerController->ServerSetPlayerTeamClient(1);
 							MyGameState->Team1Players = Team1Players;
