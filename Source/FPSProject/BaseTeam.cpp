@@ -19,9 +19,13 @@ void ABaseTeam::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ABaseTeam, TeamPlayerStates);
 	DOREPLIFETIME(ABaseTeam, TeamColor);
 	DOREPLIFETIME(ABaseTeam, TeamName);
+	DOREPLIFETIME(ABaseTeam, TeamScore);
 	DOREPLIFETIME(ABaseTeam, TeamNumber);
 }
-
+void ABaseTeam::ChangeScore_Implementation(int32 delta)
+{
+	TeamScore += delta;
+}
 bool ABaseTeam::UpdateTeamOrder_Validate(const TArray<AFPSPlayerState*>& NewOrder)
 {
 	return true;

@@ -19,11 +19,16 @@ void AFPSPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(AFPSPlayerController, RivalTeam);
 	DOREPLIFETIME(AFPSPlayerController, TeamNumber);
 	DOREPLIFETIME(AFPSPlayerController, Score);
 	DOREPLIFETIME(AFPSPlayerController, Kills);
 	DOREPLIFETIME(AFPSPlayerController, Deaths);
 	DOREPLIFETIME(AFPSPlayerController, Assists);
+	DOREPLIFETIME(AFPSPlayerController, TeamScorePercent);
+	DOREPLIFETIME(AFPSPlayerController, MyTeamScore);
+	DOREPLIFETIME(AFPSPlayerController, RivalScorePercent);
+	DOREPLIFETIME(AFPSPlayerController, RivalTeamScore);
 
 
 
@@ -211,10 +216,13 @@ bool AFPSPlayerController::UpdateRivalStats_Validate(int32 RivalTeam, int32 Riva
 {
 	return true;
 }
-
+void AFPSPlayerController::SetRivalTeam_Implementation(class ABaseTeam* NewRival)
+{
+	RivalTeam = NewRival;
+}
 void AFPSPlayerController::UpdateRivalStats_Implementation(int32 RivalTeam, int32 RivalScore, float RivalPercent)
 {
-	RivalTeamNumber = RivalTeam;
+	//RivalTeamNumber = RivalTeam;
 	RivalTeamScore = RivalScore;
 	RivalScorePercent = RivalPercent;
 

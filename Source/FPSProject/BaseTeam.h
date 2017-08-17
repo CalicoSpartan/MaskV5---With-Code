@@ -17,7 +17,8 @@ public:
 	ABaseTeam();
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Score")
+		int32 TeamScore;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Players")
 	FColor TeamColor;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Players")
@@ -28,6 +29,8 @@ public:
 	void UpdateTeamOrder(const TArray<AFPSPlayerState*>& NewOrder);
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Players")
 	TArray<AFPSPlayerState*> TeamPlayerStates;
+	UFUNCTION(NetMulticast, Reliable)
+		void ChangeScore(int32 delta);
 
 protected:
 	// Called when the game starts or when spawned

@@ -45,9 +45,13 @@ public:
 		void SetAssistsMultiCast(int32 delta);
 	UFUNCTION(NetMultiCast, Reliable, Category = "Team")
 		void SetTeam(class ABaseTeam* MyTeam);
+	UFUNCTION(NetMultiCast, Reliable, Category = "Team")
+		void SetRivalTeam(class ABaseTeam* NewRivalTeam);
 
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Team")
+		class ABaseTeam* RivalTeam;
 
-	UPROPERTY(Replicated,EditAnywhere, Category = "Team")
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadOnly,Category = "Team")
 		class ABaseTeam* Team;
 
 

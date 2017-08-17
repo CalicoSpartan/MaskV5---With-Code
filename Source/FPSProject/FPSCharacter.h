@@ -43,7 +43,10 @@ public:
 		void TriggerAddUI();
 	UFUNCTION(BlueprintNativeEvent)
 		void TriggerAddUIBlueprint();
-
+	UFUNCTION(NetMultiCast, Reliable)
+		void AddTeamColor();
+	UFUNCTION(BlueprintNativeEvent)
+		void TriggerAddColorBlueprint();
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 		float AccuracySpreadValue = 0;

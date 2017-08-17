@@ -275,10 +275,11 @@ void AFPSGameState::Update()
 								{
 									if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
 									{
-
-
+										ps->Team->ChangeScore(GameMode->PointsPerKill);
+										/*
 										if (ps->Team->TeamNumber == 1)
 										{
+
 											ClientUpdateScore(1, GameMode->PointsPerKill);
 											UpdateScoreBlueprintEvent();
 
@@ -290,6 +291,19 @@ void AFPSGameState::Update()
 											UE_LOG(LogClass, Log, TEXT("Team2 Scored"));
 
 										}
+										if (ps->Team->TeamNumber == 3)
+										{
+											ClientUpdateScore(3, GameMode->PointsPerKill);
+											UpdateScoreBlueprintEvent();
+
+										}
+										if (ps->Team->TeamNumber == 4)
+										{
+											ClientUpdateScore(4, GameMode->PointsPerKill);
+											UpdateScoreBlueprintEvent();
+
+										}
+										*/
 
 									}
 
@@ -494,21 +508,14 @@ void AFPSGameState::Update()
 				{
 					if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FPSController->PlayerState))
 					{
-						if (ps->Team->TeamNumber == 1)
-						{
-							float ScorePercent = ((double)Team1Score / GameMode->ScoreToWin);
+						
+	
+						float ScorePercent = ((double)ps->Team->TeamScore / GameMode->ScoreToWin);
 
-							FPSController->UpdateMyTeamStats(Team1Score, ScorePercent);
+						FPSController->UpdateMyTeamStats(ps->Team->TeamScore, ScorePercent);
 
-						}
-						if (ps->Team->TeamNumber == 2)
-						{
-							//UE_LOG(LogClass, Log, TEXT(""));
-							float ScorePercent = ((double)Team2Score / GameMode->ScoreToWin);
+				
 
-							FPSController->UpdateMyTeamStats(Team2Score, ScorePercent);
-
-						}
 					}
 
 				}
@@ -530,10 +537,10 @@ void AFPSGameState::Update()
 										if (ps2->Team->TeamNumber != 0)
 										{
 											if (OtherController->MyPlayerState) {
-												if (FGenericPlatformMath::Abs(OtherController->MyTeamScore - FPSController->MyTeamScore) < RivalDifference)
+												if (FGenericPlatformMath::Abs(ps2->Team->TeamScore - ps->Team->TeamScore) < RivalDifference)
 												{
 													MyRival = OtherController;
-													RivalDifference = (FGenericPlatformMath::Abs(OtherController->MyTeamScore - FPSController->MyTeamScore));
+													RivalDifference = (FGenericPlatformMath::Abs(ps2->Team->TeamScore - ps->Team->TeamScore));
 												}
 											}
 										}
@@ -549,18 +556,18 @@ void AFPSGameState::Update()
 					{
 						if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode())) {
 
-							if (Rivalps->Team->TeamNumber == 1)
-							{
-								float RivalScorePercent = ((double)Team1Score / GameMode->ScoreToWin);
+					
+							float RivalScorePercent = ((double)Rivalps->Team->TeamScore / GameMode->ScoreToWin);
 
-								FPSController->UpdateRivalStats(Rivalps->Team->TeamNumber, MyRival->MyTeamScore, RivalScorePercent);
-							}
-							if (Rivalps->Team->TeamNumber == 2)
+							FPSController->UpdateRivalStats(Rivalps->Team->TeamNumber, Rivalps->Team->TeamScore, RivalScorePercent);
+							if (Rivalps->Team != NULL)
 							{
-								float RivalScorePercent = ((double)Team2Score / GameMode->ScoreToWin);
-
-								FPSController->UpdateRivalStats(Rivalps->Team->TeamNumber, MyRival->MyTeamScore, RivalScorePercent);
+								if (AFPSPlayerState* Myps = Cast<AFPSPlayerState>(FPSController->PlayerState))
+								{
+									Myps->SetRivalTeam(Rivalps->Team);
+								}
 							}
+							
 						}
 					}
 				}
@@ -570,44 +577,30 @@ void AFPSGameState::Update()
 	}
 	if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
 	{
-		if (Team1Score >= GameMode->ScoreToWin)
+		for (int32 i = 0; i < Teams.Num(); ++i)
 		{
-			//UE_LOG(LogClass, Log, TEXT("GAME OVER"));
-			WinningTeam = 1;
-			WinningMessage = TEXT("Team 1 Won");
-			ClientUpdateWinningTeam(WinningTeam, FName(*WinningMessage));
-			CallHUDGameOver();
-			for (FConstControllerIterator It = World->GetControllerIterator(); It; ++It) {
-				if (AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(*It)) {
-					if (AFPSCharacter* Player = Cast<AFPSCharacter>(PlayerController->GetPawn())) {
-						Player->SetCurrentState(EPlayerState::EPlayerWaiting);
+			if (ABaseTeam* team = Cast<ABaseTeam>(Teams[i]))
+			{
+				if (team->TeamScore >= GameMode->ScoreToWin)
+				{
+					WinningTeam = team->TeamNumber;
+					WinningMessage = TEXT("%s Won"),*team->TeamName.ToString();
+					ClientUpdateWinningTeam(WinningTeam, FName(*WinningMessage));
+					CallHUDGameOver();
+					for (FConstControllerIterator It = World->GetControllerIterator(); It; ++It) {
+						if (AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(*It)) {
+							if (AFPSCharacter* Player = Cast<AFPSCharacter>(PlayerController->GetPawn())) {
+								Player->SetCurrentState(EPlayerState::EPlayerWaiting);
+							}
+
+						}
+
 					}
-
+					SetCurrentState(EGamePlayState::EGameOver);
 				}
-
 			}
-			SetCurrentState(EGamePlayState::EGameOver);
-
 		}
-		if (Team2Score >= GameMode->ScoreToWin)
-		{
-			//UE_LOG(LogClass, Log, TEXT("GAME OVER"));
-			WinningTeam = 2;
-			WinningMessage = TEXT("Team 2 Won");
-			ClientUpdateWinningTeam(WinningTeam, FName(*WinningMessage));
-			CallHUDGameOver();
-			for (FConstControllerIterator It = World->GetControllerIterator(); It; ++It) {
-				if (AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(*It)) {
-					if (AFPSCharacter* Player = Cast<AFPSCharacter>(PlayerController->GetPawn())) {
-						Player->SetCurrentState(EPlayerState::EPlayerWaiting);
-					}
 
-				}
-
-			}
-			SetCurrentState(EGamePlayState::EGameOver);
-
-		}
 	}
 
 }

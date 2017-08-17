@@ -51,8 +51,15 @@ AFPSCharacter::AFPSCharacter()
 
 }
 
-
+void AFPSCharacter::AddTeamColor_Implementation()
+{
+	TriggerAddColorBlueprint();
+}
 void AFPSCharacter::TriggerUpdateUIBlueprint_Implementation() {
+
+}
+void AFPSCharacter::TriggerAddColorBlueprint_Implementation()
+{
 
 }
 

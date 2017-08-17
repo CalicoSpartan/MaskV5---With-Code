@@ -6,7 +6,7 @@
 void AFPSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
+	DOREPLIFETIME(AFPSPlayerState, RivalTeam);
 	DOREPLIFETIME(AFPSPlayerState, bTeamB);
 	DOREPLIFETIME(AFPSPlayerState, TeamNumber);
 	DOREPLIFETIME(AFPSPlayerState, MyScore);
@@ -20,6 +20,10 @@ void AFPSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 void AFPSPlayerState::SetTeam_Implementation(class ABaseTeam* MyTeam)
 {
 	Team = MyTeam;
+}
+void AFPSPlayerState::SetRivalTeam_Implementation(class ABaseTeam* NewRivalTeam)
+{
+	RivalTeam = NewRivalTeam;
 }
 
 void AFPSPlayerState::SetUserNameMultiCast_Implementation(FName NewName)

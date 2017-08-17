@@ -193,6 +193,7 @@ void AFPSProjectGameModeBase::RespawnPlayer(APlayerController* NewPlayer)
 		if (Character)
 		{
 			Character->TriggerAddUI();
+			Character->AddTeamColor();
 
 		}
 		if (PlayerController)
@@ -327,6 +328,7 @@ void AFPSProjectGameModeBase::StartNewPlayerClient(APlayerController* NewPlayer)
 				if (Character)
 				{
 					Character->TriggerAddUI();
+					Character->AddTeamColor();
 
 				}
 
@@ -511,6 +513,10 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 				if (PlayersOnTeams == GetNumPlayers())
 				{
 					UE_LOG(LogClass, Log, TEXT("Everyone is on a team"));
+					if (AFPSGameState* TheGameState = Cast<AFPSGameState>(GameState))
+					{
+						TheGameState->UpdateTeamList(Teams);
+					}
 					for (int32 team = 0; team < Teams.Num(); ++team)
 					{
 						if (ABaseTeam* teamclass = Cast<ABaseTeam>(Teams[team]))
@@ -547,6 +553,7 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 					if (Character)
 					{
 						Character->TriggerAddUI();
+						Character->AddTeamColor();
 
 					}
 					for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
@@ -606,15 +613,15 @@ void AFPSProjectGameModeBase::BeginPlay()
 		Team->TeamNumber = i + 1;
 		if (i == 0)
 		{
-			Team->TeamColor = FColor::Black;
+			Team->TeamColor = FColor::Blue;
 		}
 		if (i == 1)
 		{
-			Team->TeamColor = FColor::Blue;
+			Team->TeamColor = FColor::Red;
 		}
 		if (i == 2)
 		{
-			Team->TeamColor = FColor::Red;
+			Team->TeamColor = FColor::Green;
 		}
 		Teams.Add(Team);
 		if (Team)

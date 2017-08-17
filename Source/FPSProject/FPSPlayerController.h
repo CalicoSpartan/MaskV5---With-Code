@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "FPSPlayerState.h"
+#include "BaseTeam.h"
 #include "FPSPlayerController.generated.h"
 
 /**
@@ -53,19 +54,22 @@ public:
 	virtual void BeginPlay() override;
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interface")
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite, Category = "Interface")
 		int32 MyTeamScore = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interface")
 		int32 RivalTeamNumber = 0;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interface")
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite, Category = "Interface")
 		float RivalScorePercent = 0.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interface")
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite, Category = "Interface")
 		int32 RivalTeamScore = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interface")
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite, Category = "Interface")
 		float TeamScorePercent = 0.0f;
-
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+		class ABaseTeam* RivalTeam;
+	UFUNCTION(NetMulticast, Reliable)
+		void SetRivalTeam(class ABaseTeam* NewRival);
 
 
 	UFUNCTION(Server, Reliable, WithValidation)
