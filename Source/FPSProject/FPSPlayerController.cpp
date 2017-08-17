@@ -80,7 +80,7 @@ void AFPSPlayerController::Respawn()
 
 void AFPSPlayerController::ServerSetPlayerTeam_Implementation(int32 NewTeam)
 {
-	TeamNumber = NewTeam;
+	//TeamNumber = NewTeam;
 	ServerSpawnPlayer();
 }
 
@@ -121,7 +121,7 @@ bool AFPSPlayerController::ServerRespawnPlayer_Validate()
 
 void AFPSPlayerController::ServerSetPlayerTeamClient_Implementation(int32 NewTeam)
 {
-	TeamNumber = NewTeam;
+	//TeamNumber = NewTeam;
 	ServerSpawnPlayerClient();
 }
 

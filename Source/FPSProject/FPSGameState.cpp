@@ -120,7 +120,14 @@ void AFPSGameState::ClientUpdateNumberOfTeams_Implementation(int32 Teams)
 	NumberOfTeams = Teams;
 
 }
-
+bool AFPSGameState::UpdateTeamList_Validate(const TArray<ABaseTeam*>& NewTeamList)
+{
+	return true;
+}
+void AFPSGameState::UpdateTeamList_Implementation(const TArray<ABaseTeam*>& NewTeamList)
+{
+	Teams = NewTeamList;
+}
 
 
 
@@ -258,7 +265,7 @@ void AFPSGameState::Update()
 						ClientUpdateKillFeedMessage(FName(*KillFeedMessage));
 
 						//SetNewKillFeedMessage(KillFeedMessage);
-
+						
 						if (AFPSPlayerController* FPSController = Cast<AFPSPlayerController>(Player->Shooter->Controller))
 						{
 							if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FPSController->PlayerState))
@@ -296,7 +303,7 @@ void AFPSGameState::Update()
 
 						////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+						/*
 						TArray<AFPSPlayerState*> CorrectTeam1PlayerOrder;
 						TArray<AFPSPlayerState*> CorrectTeam2PlayerOrder;
 						if (Team1PlayerControllers.Num() + Team2PlayerControllers.Num() == NumberOfPlayers)
@@ -348,75 +355,7 @@ void AFPSGameState::Update()
 										}
 									}
 
-									//CorrectTeam2PlayerOrder.Emplace(ps);
-									/*
-									if (pc->GetScore() > BestScore)
-									{
-									//UE_LOG(LogClass, Log, TEXT("Team 2: Beat Best Score "));
-									CorrectOrder.Insert(pc, 0);
-									BestScore = pc->GetScore();
-									}
 
-									else
-									{
-									if (CorrectOrder.Num() > 1)
-									{
-									UE_LOG(LogClass, Log, TEXT("Team 1 Correct Order Greater than 1"));
-									for (int32 index = 0; index < CorrectOrder.Num(); ++index)
-									{
-									if (AFPSPlayerController* pc2 = Cast<AFPSPlayerController>(CorrectOrder[index]))
-									{
-									if (pc->GetScore() > pc2->GetScore())
-									{
-									UE_LOG(LogClass, Log, TEXT("ScoreHigher "));
-									CorrectOrder.Insert(pc, index);
-									}
-
-
-
-									}
-
-									}
-									if (CorrectOrder.Contains(pc))
-									{
-
-									}
-									else
-									{
-									UE_LOG(LogClass, Log, TEXT("Added"));
-									CorrectOrder.Emplace(pc);
-									}
-									}
-									else
-									{
-
-									CorrectOrder.Emplace(pc);
-									}
-
-
-
-									}
-									*/
-
-
-								}
-
-
-							}
-							//UE_LOG(LogClass, Log, TEXT("i: %d"), i);
-							//UE_LOG(LogClass, Log, TEXT("CorrectOrderTeam2: %d"), Team2CorrectOrder.Num());
-							/*
-							if (CorrectOrder.Num() > 1) {
-
-							UE_LOG(LogClass, Log, TEXT("%s , %s, %s "), *FString::FromInt(UGameplayStatics::trtrollerID(CorrectOrder[0])), *FString::FromInt(UGameplayStatics::GetPlayerControllerID(CorrectOrder[1])), *FString::FromInt(UGameplayStatics::GetPlayerControllerID(CorrectOrder[2])));
-							}
-							*/
-
-
-
-
-							//Team2CorrectOrder.Empty();
-							//UE_LOG(LogClass, Log, TEXT("Team2Controllers: %d"), Team2PlayerControllers.Num());
 							int32 Team1BestScore = -1;
 							UE_LOG(LogClass, Log, TEXT("Team1PlayerControllersNUM: %d"), Team1PlayerControllers.Num());
 							UE_LOG(LogClass, Log, TEXT("Team1PlayerStatesNUM: %d"), Team1PlayerStates.Num());
@@ -456,7 +395,7 @@ void AFPSGameState::Update()
 											CorrectTeam1PlayerOrder.Emplace(ps2);
 										}
 
-										//UE_LOG(LogClass, Log, TEXT("CorrectTeam1PlayerOrderNUM is > 1"));
+										
 									}
 									else
 									{
@@ -467,54 +406,7 @@ void AFPSGameState::Update()
 
 										}
 									}
-									/*
-									if (pc->GetScore() > BestScore)
-									{
-									//UE_LOG(LogClass, Log, TEXT("Team 2: Beat Best Score "));
-									CorrectOrder.Insert(pc, 0);
-									BestScore = pc->GetScore();
-									}
-
-									else
-									{
-									if (CorrectOrder.Num() > 1)
-									{
-									UE_LOG(LogClass, Log, TEXT("Team 1 Correct Order Greater than 1"));
-									for (int32 index = 0; index < CorrectOrder.Num(); ++index)
-									{
-									if (AFPSPlayerController* pc2 = Cast<AFPSPlayerController>(CorrectOrder[index]))
-									{
-									if (pc->GetScore() > pc2->GetScore())
-									{
-									UE_LOG(LogClass, Log, TEXT("ScoreHigher "));
-									CorrectOrder.Insert(pc, index);
-									}
-
-
-
-									}
-
-									}
-									if (CorrectOrder.Contains(pc))
-									{
-
-									}
-									else
-									{
-									UE_LOG(LogClass, Log, TEXT("Added"));
-									CorrectOrder.Emplace(pc);
-									}
-									}
-									else
-									{
-
-									CorrectOrder.Emplace(pc);
-									}
-
-
-
-									}
-									*/
+									
 
 
 								}
@@ -535,33 +427,14 @@ void AFPSGameState::Update()
 								UE_LOG(LogClass, Log, TEXT("AYYYYYY"));
 								Team1PlayerOrder = CorrectTeam1PlayerOrder;
 
-								//testplayerstate = Team1PlayerOrder[0]->PlayerState;
-								/*
-								for (int32 i = 0; i < Team1PlayerOrder.Num(); ++i)
-								{
-								ClientsTeam1Controllers(Team1PlayerOrder[i]);
-								UE_LOG(LogClass, Log, TEXT("CALLED CLIENT THING"));
-								}
-								for (FConstControllerIterator controller = World->GetControllerIterator(); controller; ++controller) {
-								if (AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(*controller)) {
-								PlayerController->UpdateScoreBoardUI();
-								}
-								}
-								*/
+
 							}
 							else
 							{
 
 								UE_LOG(LogClass, Log, TEXT("NOOOOO"));
 							}
-							//UE_LOG(LogClass, Log, TEXT("i: %d"), i);
-							//UE_LOG(LogClass, Log, TEXT("CorrectOrderTeam2: %d"), Team2CorrectOrder.Num());
-							/*
-							if (CorrectOrder.Num() > 1) {
 
-							UE_LOG(LogClass, Log, TEXT("%s , %s, %s "), *FString::FromInt(UGameplayStatics::GetPlayerControllerID(CorrectOrder[0])), *FString::FromInt(UGameplayStatics::GetPlayerControllerID(CorrectOrder[1])), *FString::FromInt(UGameplayStatics::GetPlayerControllerID(CorrectOrder[2])));
-							}
-							*/
 
 
 
@@ -576,7 +449,7 @@ void AFPSGameState::Update()
 						}
 
 
-
+						*/
 
 
 
@@ -597,7 +470,7 @@ void AFPSGameState::Update()
 	
 
 
-						//TheHUD->AddMessageEvent();
+						
 
 
 
@@ -767,6 +640,7 @@ void AFPSGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AFPSGameState, KillFeedMessage);
+	DOREPLIFETIME(AFPSGameState, Teams);
 	DOREPLIFETIME(AFPSGameState, testplayerstate);
 	DOREPLIFETIME(AFPSGameState, CurrentState);
 	DOREPLIFETIME(AFPSGameState, WinningPlayerName);

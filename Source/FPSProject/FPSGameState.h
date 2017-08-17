@@ -3,6 +3,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "PlayerHUD.h"
 #include "FPSPlayerState.h"
+#include "BaseTeam.h"
 #include "FPSCharacter.h"
 #include "FPSProjectGameModeBase.h"
 #include "FPSPlayerController.h"
@@ -99,9 +100,12 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void UpdateTeamOrder(const TArray<AFPSPlayerState*>& Team1Order, const TArray<AFPSPlayerState*>& Team2Order);
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+		void UpdateTeamList(const TArray<ABaseTeam*>& NewTeamList);
 	UFUNCTION()
 		void CallUpdateScoreboard();
-
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite, Category = "Teams")
+		TArray<ABaseTeam*> Teams;
 	UFUNCTION(NetMulticast, Reliable)
 		void SetNumberOfPlayers(int32 newNumberOfPlayers);
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "GameStats")
