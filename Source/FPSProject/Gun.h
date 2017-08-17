@@ -42,6 +42,8 @@ public:
 		float ZoomMaxSpread;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		float ZoomMinSpread;
+
+	
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		bool IsBurst;
 	UPROPERTY(EditAnywhere, Category = "Weapon")

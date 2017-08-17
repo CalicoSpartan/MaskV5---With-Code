@@ -38,6 +38,7 @@ AAssaultRifle::AAssaultRifle()
 	MinSpread = 20.0f;
 	ZoomMaxSpread = 30.0f;
 	ZoomMinSpread = 10.0f;
+
 	AccuracySpreadDecrease = 3.0f;
 	AmmoLeftInMag = MagazineSize;
 	IsExplosive = false;

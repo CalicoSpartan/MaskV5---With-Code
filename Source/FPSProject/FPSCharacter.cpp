@@ -377,9 +377,9 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 						if (World->LineTraceSingleByChannel(hit, FPSCameraComponent->GetComponentLocation(), FPSCameraComponent->GetComponentLocation() + (FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range), ECollisionChannel::ECC_Visibility, QueryParams)) {
 							//DrawDebugLine(World, CurrentPrimary->MuzzleLocation->GetComponentLocation(), hit.Location, FColor::Red, false, 3.0f);
 							float distancefactor = hit.Distance / 1000.0f;
-							float RandYSpread = FMath::RandRange(-AccuracySpreadValue * distancefactor, +AccuracySpreadValue * distancefactor);
-							float RandZSpread = FMath::RandRange(-AccuracySpreadValue * distancefactor, +AccuracySpreadValue * distancefactor);
-							float RandXSpread = FMath::RandRange(-AccuracySpreadValue * distancefactor, +AccuracySpreadValue * distancefactor);
+							float RandYSpread = FMath::RandRange(-simASV * distancefactor, +simASV * distancefactor);
+							float RandZSpread = FMath::RandRange(-simASV * distancefactor, +simASV * distancefactor);
+							float RandXSpread = FMath::RandRange(-simASV * distancefactor, +simASV * distancefactor);
 							//float VelocityFactor = GetVelocity().GetClampedToSize(1.0f, 2.0f).Size();
 							FVector AccuracyChange = FVector(RandXSpread, RandYSpread, RandZSpread);
 							//FPlane testplane = UKismetMathLibrary::MakePlaneFromPointAndNormal(hit.Location, hit.Normal);
@@ -445,9 +445,9 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 						{
 							//DrawDebugLine(World, CurrentPrimary->MuzzleLocation->GetComponentLocation(), FPSCameraComponent->GetComponentLocation() + (FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range), FColor::Red, false, 3.0f);
 							float distancefactor = CurrentPrimary->Range / 1000.0f;
-							float RandYSpread = FMath::RandRange(-AccuracySpreadValue * distancefactor, +AccuracySpreadValue * distancefactor);
-							float RandZSpread = FMath::RandRange(-AccuracySpreadValue * distancefactor, +AccuracySpreadValue * distancefactor);
-							float RandXSpread = FMath::RandRange(-AccuracySpreadValue * distancefactor, +AccuracySpreadValue * distancefactor);
+							float RandYSpread = FMath::RandRange(-simASV * distancefactor, +simASV * distancefactor);
+							float RandZSpread = FMath::RandRange(-simASV * distancefactor, +simASV * distancefactor);
+							float RandXSpread = FMath::RandRange(-simASV * distancefactor, +simASV * distancefactor);
 							//float VelocityFactor = GetVelocity().GetClampedToSize(1.0f, 2.0f).Size();
 							FVector AccuracyChange = FVector(RandXSpread, RandYSpread, RandZSpread);
 							//FPlane testplane = UKismetMathLibrary::MakePlaneFromPointAndNormal(hit.Location, hit.Normal);
@@ -516,22 +516,27 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 
 					}
 					CurrentPrimary->ChangeAmmo(CurrentPrimary->TotalAmmo, CurrentPrimary->AmmoLeftInMag - 1);
-					UE_LOG(LogClass, Log, TEXT("IsZoomed? %s"), (IsZoomed ? TEXT("True") : TEXT("False")));
+				
 					if (IsZoomed == true)
 					{
-						if (AccuracySpreadValue <= CurrentPrimary->ZoomMaxSpread)
+						if (simASV <= CurrentPrimary->ZoomMaxSpread)
 						{
-							AccuracySpreadValue += CurrentPrimary->ZoomAccuracySpreadIncrease;
-							UE_LOG(LogClass, Log, TEXT("Zoomaccuracyspreadincrease: %f"), CurrentPrimary->ZoomAccuracySpreadIncrease);
+							simASV += CurrentPrimary->ZoomAccuracySpreadIncrease;
+							
 						}
 					}
 					else
 					{
-						if (AccuracySpreadValue <= CurrentPrimary->MaxSpread)
+						if (simASV <= CurrentPrimary->MaxSpread)
 						{
-							AccuracySpreadValue += CurrentPrimary->AccuracySpreadIncrease;
-							UE_LOG(LogClass, Log, TEXT("accuracyspreadincrease: %f"), CurrentPrimary->AccuracySpreadIncrease);
+							simASV += CurrentPrimary->AccuracySpreadIncrease;
+							
 						}
+					}
+					if (AccuracySpreadValue <= CurrentPrimary->MaxSpread)
+					{
+						AccuracySpreadValue += CurrentPrimary->AccuracySpreadIncrease;
+						
 					}
 				}
 				if (CurrentPrimary->AmmoLeftInMag <= 0 && CurrentPrimary->TotalAmmo > 0)
@@ -671,6 +676,7 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(AFPSCharacter, simASV);
 	DOREPLIFETIME(AFPSCharacter, FPSMesh);
 	DOREPLIFETIME(AFPSCharacter, FPSCameraComponent);
 	DOREPLIFETIME(AFPSCharacter, CurrentPrimary);
@@ -689,43 +695,65 @@ void AFPSCharacter::Tick(float DeltaTime)
 	{
 		if (!IsZoomed)
 		{
-			if (AccuracySpreadValue > CurrentPrimary->MinSpread)
+			if (simASV > CurrentPrimary->MinSpread)
 			{
 
 
-				AccuracySpreadValue -= CurrentPrimary->AccuracySpreadDecrease;
+				simASV -= CurrentPrimary->AccuracySpreadDecrease;
 
 
 			}
-			if (AccuracySpreadValue < CurrentPrimary->MinSpread)
+			if (simASV < CurrentPrimary->MinSpread)
 			{
 
-				AccuracySpreadValue = CurrentPrimary->MinSpread;
+				simASV = CurrentPrimary->MinSpread;
 
 
 			}
+
 		}
 		else
 		{
-			if (AccuracySpreadValue > CurrentPrimary->ZoomMinSpread)
+
+			if (simASV > CurrentPrimary->ZoomMinSpread)
 			{
 
 
-				AccuracySpreadValue -= CurrentPrimary->AccuracySpreadDecrease;
+				simASV -= CurrentPrimary->AccuracySpreadDecrease;
 
 
 			}
-			if (AccuracySpreadValue < CurrentPrimary->ZoomMinSpread)
+			if (simASV < CurrentPrimary->ZoomMinSpread)
 			{
 
-				AccuracySpreadValue = CurrentPrimary->ZoomMinSpread;
+				simASV = CurrentPrimary->ZoomMinSpread;
 
 
 			}
+
+
 		}
+
+		if (AccuracySpreadValue > CurrentPrimary->MinSpread)
+		{
+
+
+			AccuracySpreadValue -= CurrentPrimary->AccuracySpreadDecrease;
+
+
+		}
+		if (AccuracySpreadValue < CurrentPrimary->MinSpread)
+		{
+
+			AccuracySpreadValue = CurrentPrimary->MinSpread;
+
+
+		}
+
 	}
 	else
 	{
+		simASV = 0.0f;
 		AccuracySpreadValue = 0.0f;
 	}
 	if (CurrentState == EPlayerState::EPlayerWaiting)

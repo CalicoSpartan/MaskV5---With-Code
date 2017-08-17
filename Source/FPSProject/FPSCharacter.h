@@ -51,6 +51,8 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 		float AccuracySpreadValue = 0;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+		float simASV = 0;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 		bool IsZoomed = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
