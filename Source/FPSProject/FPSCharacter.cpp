@@ -50,6 +50,29 @@ AFPSCharacter::AFPSCharacter()
 
 
 }
+void AFPSCharacter::ShowEnemyName_Implementation(class AFPSCharacter* Enemy)
+{
+	ShowEnemyNameBluePrint(Enemy);
+}
+
+void AFPSCharacter::Update()
+{
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	FHitResult hit;
+	
+	if (GetWorld()->LineTraceSingleByChannel(hit, FPSCameraComponent->GetComponentLocation(), FPSCameraComponent->GetComponentLocation() + FPSCameraComponent->GetForwardVector() * 1800.0f, ECollisionChannel::ECC_Visibility, QueryParams))
+	{
+		if (AFPSCharacter* HitCharacter = Cast<AFPSCharacter>(hit.GetActor()))
+		{
+			if (AFPSPlayerState* HitPlayerState = Cast<AFPSPlayerState>(HitCharacter->PlayerState))
+			{
+				ShowEnemyName(HitCharacter);
+			}
+
+		}
+	}
+}
 
 void AFPSCharacter::AddTeamColor_Implementation()
 {
@@ -145,7 +168,7 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
 	if (LastHitBone != "" && LastHitForce != NULL && LastHitDirection != FVector::ZeroVector)
 	{
-		UE_LOG(LogClass, Log, TEXT("AddedForce!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+		
 		GetMesh()->AddForce(LastHitDirection * LastHitForce,LastHitBone);
 	}
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
@@ -577,6 +600,7 @@ void AFPSCharacter::BeginPlay()
 		// Put up a debug message for five seconds. The -1 "Key" value (first argument) indicates that we will never need to update or refresh this message.
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using FPSCharacter."));
 	}
+	GetWorld()->GetTimerManager().SetTimer(UpdateTimer, this, &AFPSCharacter::Update, UpdateDelay, true);
 }
 
 
@@ -691,6 +715,7 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 // Called every frame
 void AFPSCharacter::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime);
 	if (CurrentPrimary != NULL)
 	{
 		if (!IsZoomed)

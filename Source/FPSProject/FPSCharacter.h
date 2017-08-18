@@ -31,6 +31,18 @@ class FPSPROJECT_API AFPSCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AFPSCharacter();
+	UFUNCTION()
+		void Update();
+	UPROPERTY(EditAnywhere, Category = "Update")
+		float UpdateDelay;
+
+	UFUNCTION(NetMulticast, Reliable)
+		void ShowEnemyName(class AFPSCharacter* Enemy);
+	UFUNCTION(BlueprintImplementableEvent)
+		void ShowEnemyNameBluePrint(class AFPSCharacter* Enemy);
+
+
+	FTimerHandle UpdateTimer;
 	UFUNCTION(NetMultiCast, Reliable, WithValidation)
 		void TriggerDeathUI();
 	UFUNCTION(BlueprintNativeEvent)
