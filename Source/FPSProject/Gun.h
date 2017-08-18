@@ -62,6 +62,8 @@ public:
 		float ZoomRecoilValue;
 	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 		int32 TotalAmmo;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+		int32 MaxAmmo;
 	UPROPERTY(Replicated,EditAnywhere,BlueprintReadWrite, Category = "Weapon")
 		int32 AmmoLeftInMag;
 	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -114,6 +116,10 @@ public:
 		void ClientStartReload();
 	UFUNCTION()
 		void ClientEndReload();
+
+	// the pawn who picked up the pickup
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+		APawn* WeaponInstigator;
 protected:
 
 
@@ -126,9 +132,7 @@ protected:
 	UFUNCTION()
 		virtual void OnRep_IsActive();
 
-	// the pawn who picked up the pickup
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-		APawn* WeaponInstigator;
+
 
 private:
 	// client side handling of being picked up

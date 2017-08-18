@@ -41,6 +41,8 @@ AFPSCharacter::AFPSCharacter()
 	CollectionBox->SetupAttachment(RootComponent);
 	CollectionBox->bGenerateOverlapEvents = true;
 
+
+
 	//set base weapon values
 	IsFiring = false;
 	HasWeapon = false;
@@ -612,6 +614,68 @@ void AFPSCharacter::DropWeapon()
 {
 	ServerDropWeapon();
 }
+void AFPSCharacter::PickupEquipment()
+{
+	
+	if (Role == ROLE_AutonomousProxy)
+	{
+		ServerPickupEquipment();
+	}
+	else
+	{
+		if (Role == ROLE_Authority)
+		{
+			if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
+			{
+				if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
+				{
+
+
+					TArray<AActor*> PossibleEquipment;
+					CollectionBox->GetOverlappingActors(PossibleEquipment);
+					for (int32 i = 0; i < PossibleEquipment.Num(); ++i)
+					{
+
+						if (AGun* const Gun = Cast<AGun>(PossibleEquipment[i]))
+						{
+							
+							if (!Gun->IsPendingKill() && Gun->IsActive() && Gun->WeaponInstigator == NULL)
+							{
+								if (CurrentPrimary != NULL)
+								{
+									if (Gun != CurrentPrimary)
+									{
+										if (CurrentPrimary->GunName == Gun->GunName)
+										{
+											if (CurrentPrimary->TotalAmmo != CurrentPrimary->MaxAmmo)
+											{
+												int32 AmmoNeeded = CurrentPrimary->MaxAmmo - CurrentPrimary->TotalAmmo;
+												if (Gun->TotalAmmo >= AmmoNeeded)
+												{
+													Gun->ChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
+													CurrentPrimary->ChangeAmmo(CurrentPrimary->MaxAmmo, CurrentPrimary->AmmoLeftInMag);
+
+												}
+												else
+												{
+													CurrentPrimary->ChangeAmmo(CurrentPrimary->TotalAmmo + Gun->TotalAmmo, CurrentPrimary->AmmoLeftInMag);
+													Gun->ChangeAmmo(0, Gun->AmmoLeftInMag);
+												}
+												UE_LOG(LogClass, Log, TEXT("PickedUpAmmo"));
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					//}
+				}
+			}
+		}
+	}
+	
+}
 
 
 bool AFPSCharacter::ServerDropWeapon_Validate()
@@ -635,9 +699,64 @@ void AFPSCharacter::ServerDropWeapon_Implementation()
 					{
 						Gun->DroppedBy(this);
 						CurrentPrimary = NULL;
+						
 					}
 				}
 			}
+		}
+	}
+}
+
+bool AFPSCharacter::ServerPickupEquipment_Validate()
+{
+	return true;
+}
+void AFPSCharacter::ServerPickupEquipment_Implementation()
+{
+	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
+	{
+		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
+		{
+
+				
+			TArray<AActor*> PossibleEquipment;
+			CollectionBox->GetOverlappingActors(PossibleEquipment);
+			for (int32 i = 0; i < PossibleEquipment.Num(); ++i)
+			{
+
+				if (AGun* const Gun = Cast<AGun>(PossibleEquipment[i]))
+				{
+					if (!Gun->IsPendingKill() && Gun->IsActive() && Gun->WeaponInstigator == NULL)
+					{
+						if (CurrentPrimary != NULL)
+						{
+							if (Gun != CurrentPrimary)
+							{
+								if (CurrentPrimary->GunName == Gun->GunName)
+								{
+									if (CurrentPrimary->TotalAmmo != CurrentPrimary->MaxAmmo)
+									{
+										int32 AmmoNeeded = CurrentPrimary->MaxAmmo - CurrentPrimary->TotalAmmo;
+										if (Gun->TotalAmmo >= AmmoNeeded)
+										{
+											Gun->ChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
+											CurrentPrimary->ChangeAmmo(CurrentPrimary->MaxAmmo, CurrentPrimary->AmmoLeftInMag);
+
+										}
+										else
+										{
+											CurrentPrimary->ChangeAmmo(CurrentPrimary->TotalAmmo + Gun->TotalAmmo, CurrentPrimary->AmmoLeftInMag);
+											Gun->ChangeAmmo(0, Gun->AmmoLeftInMag);
+										}
+										UE_LOG(LogClass, Log, TEXT("PickedUpAmmo"));
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			//}
 		}
 	}
 }
@@ -664,7 +783,8 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 				for (int i = 0; i < CollectedActors.Num(); ++i)
 				{
 					AGun* const Gun = Cast<AGun>(CollectedActors[i]);
-					if (Gun != NULL && !Gun->IsPendingKill() && Gun->IsActive()) {
+					if (Gun != NULL && !Gun->IsPendingKill() && Gun->IsActive() && Gun->WeaponInstigator == NULL) {
+						
 						if (CurrentPrimary != NULL)
 						{
 							if (AGun* PrimaryGun = Cast<AGun>(CurrentPrimary))
@@ -716,6 +836,18 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 void AFPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	TArray<AActor*> PossibleEquipment;
+	CollectionBox->GetOverlappingActors(PossibleEquipment);
+	if (PossibleEquipment.Num() > 0)
+	{
+		//if (Role == ROLE_AutonomousProxy)
+		//{
+		PickupEquipment();
+		//}
+	}
+
+
 	if (CurrentPrimary != NULL)
 	{
 		if (!IsZoomed)

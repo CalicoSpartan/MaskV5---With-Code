@@ -7,6 +7,7 @@ void AFPSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AFPSPlayerState, RivalTeam);
+	DOREPLIFETIME(AFPSPlayerState, Betrayals);
 	DOREPLIFETIME(AFPSPlayerState, bTeamB);
 	DOREPLIFETIME(AFPSPlayerState, TeamNumber);
 	DOREPLIFETIME(AFPSPlayerState, MyScore);

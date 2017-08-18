@@ -623,6 +623,10 @@ void AFPSProjectGameModeBase::BeginPlay()
 		{
 			Team->TeamColor = FColor::Green;
 		}
+		if (i == 3)
+		{
+			Team->TeamColor = FColor::Yellow;
+		}
 		Teams.Add(Team);
 		if (Team)
 		{

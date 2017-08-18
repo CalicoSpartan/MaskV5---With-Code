@@ -19,6 +19,8 @@ public:
 		bool bTeamB;
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Team")
 		int32 TeamNumber = 0;
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
+		int32 Betrayals = 0;
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Team")
 		FString UserName = "POOOOOOP";
 	//required network scaffolding

@@ -28,6 +28,7 @@ class FPSPROJECT_API AFPSCharacter : public ACharacter
 		/** Collection Sphere */
 		UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 		class UBoxComponent* CollectionBox;
+
 public:
 	// Sets default values for this character's properties
 	AFPSCharacter();
@@ -108,6 +109,8 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void PickupWeapon();
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void PickupEquipment();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void DropWeapon();
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void FireAgain();
@@ -118,6 +121,8 @@ protected:
 	//called on server to process the collection of pickups
 	UFUNCTION(Reliable, Server, WithValidation)
 		void ServerPickupWeapon();
+	UFUNCTION(Reliable, Server, WithValidation)
+		void ServerPickupEquipment();
 	UFUNCTION(Reliable, Server, WithValidation)
 		void ServerDropWeapon();
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")

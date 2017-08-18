@@ -23,6 +23,7 @@ AAssaultRifle::AAssaultRifle()
 	FireRate = 0.1f;
 	ReloadTime = 2.5f;
 	TotalAmmo = 150;
+	MaxAmmo = TotalAmmo;
 	Range = 7000;
 	HeadShotIncrease = 1.4f;
 	ZoomFOV = 30.0f;

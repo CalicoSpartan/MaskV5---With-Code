@@ -237,6 +237,13 @@ void AFPSGameState::Update()
 		//UE_LOG(LogClass, Log, TEXT("KILLED"));
 		for (FConstControllerIterator It = World->GetControllerIterator(); It; ++It) {
 			if (APlayerController* PlayerController = Cast<APlayerController>(*It)) {
+				if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(PlayerController->PlayerState))
+				{
+					if (ps->Betrayals >= 2)
+					{
+						UE_LOG(LogClass, Log, TEXT("Player Should Be Booted"));
+					}
+				}
 				if (AFPSCharacter* Player = Cast<AFPSCharacter>(PlayerController->GetPawn())) {
 					if (Player->GetCurrentHealth() <= 0.0f) {
 						if (Player->Shooter == NULL) {
@@ -247,72 +254,89 @@ void AFPSGameState::Update()
 						if (AFPSPlayerController* FPSController = Cast<AFPSPlayerController>(PlayerController))
 						{
 							FPSController->MyPlayerState->SetDeathsMultiCast(1);
-						}
-						if (AFPSPlayerController* ShooterController = Cast<AFPSPlayerController>(Player->Shooter->Controller))
-						{
-							if (ShooterController->MyPlayerState)
+
+							if (AFPSPlayerController* ShooterController = Cast<AFPSPlayerController>(Player->Shooter->Controller))
 							{
-								ShooterController->MyPlayerState->SetKillsMultiCast(1);
-								ShooterController->MyPlayerState->SetScoreMultiCast(10);
-							}
-
-						}
-						LastKiller = Player->Shooter->GetName();
-						LastKilled = Player->GetName();
-
-						KillFeedMessage = TEXT("" + LastKiller + " killed " + LastKilled);//(TEXT("%s killed %f"), LastKiller, LastKilled);
-
-						ClientUpdateKillFeedMessage(FName(*KillFeedMessage));
-
-						//SetNewKillFeedMessage(KillFeedMessage);
-						
-						if (AFPSPlayerController* FPSController = Cast<AFPSPlayerController>(Player->Shooter->Controller))
-						{
-							if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FPSController->PlayerState))
-							{
-
-								if (ps->Team->TeamNumber != 0)
+								if (ShooterController->MyPlayerState)
 								{
-									if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+									if (ShooterController->MyPlayerState->Team != FPSController->MyPlayerState->Team)
 									{
-										ps->Team->ChangeScore(GameMode->PointsPerKill);
-										/*
-										if (ps->Team->TeamNumber == 1)
-										{
+										
 
-											ClientUpdateScore(1, GameMode->PointsPerKill);
-											UpdateScoreBlueprintEvent();
+										ShooterController->MyPlayerState->SetKillsMultiCast(1);
+										ShooterController->MyPlayerState->SetScoreMultiCast(10);
+										LastKiller = ShooterController->MyPlayerState->UserName;
+										LastKilled = FPSController->MyPlayerState->UserName;
+										
+
+										KillFeedMessage = TEXT("" + LastKiller + " killed " + LastKilled);//(TEXT("%s killed %f"), LastKiller, LastKilled);
+
+										ClientUpdateKillFeedMessage(FName(*KillFeedMessage));
+
+										//SetNewKillFeedMessage(KillFeedMessage);
+
+										if (AFPSPlayerController* FPSController = Cast<AFPSPlayerController>(Player->Shooter->Controller))
+										{
+											if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FPSController->PlayerState))
+											{
+
+												if (ps->Team->TeamNumber != 0)
+												{
+													if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+													{
+														ps->Team->ChangeScore(GameMode->PointsPerKill);
+														/*
+														if (ps->Team->TeamNumber == 1)
+														{
+
+														ClientUpdateScore(1, GameMode->PointsPerKill);
+														UpdateScoreBlueprintEvent();
+
+														}
+														if (ps->Team->TeamNumber == 2)
+														{
+														ClientUpdateScore(2, GameMode->PointsPerKill);
+														UpdateScoreBlueprintEvent();
+														UE_LOG(LogClass, Log, TEXT("Team2 Scored"));
+
+														}
+														if (ps->Team->TeamNumber == 3)
+														{
+														ClientUpdateScore(3, GameMode->PointsPerKill);
+														UpdateScoreBlueprintEvent();
+
+														}
+														if (ps->Team->TeamNumber == 4)
+														{
+														ClientUpdateScore(4, GameMode->PointsPerKill);
+														UpdateScoreBlueprintEvent();
+
+														}
+														*/
+
+													}
+
+												}
+											}
+											//}
+
 
 										}
-										if (ps->Team->TeamNumber == 2)
-										{
-											ClientUpdateScore(2, GameMode->PointsPerKill);
-											UpdateScoreBlueprintEvent();
-											UE_LOG(LogClass, Log, TEXT("Team2 Scored"));
-
-										}
-										if (ps->Team->TeamNumber == 3)
-										{
-											ClientUpdateScore(3, GameMode->PointsPerKill);
-											UpdateScoreBlueprintEvent();
-
-										}
-										if (ps->Team->TeamNumber == 4)
-										{
-											ClientUpdateScore(4, GameMode->PointsPerKill);
-											UpdateScoreBlueprintEvent();
-
-										}
-										*/
-
 									}
+									else
+									{
+										LastKiller = ShooterController->MyPlayerState->UserName;
+										LastKilled = FPSController->MyPlayerState->UserName;
 
+										KillFeedMessage = TEXT("" + LastKiller + " betrayed " + LastKilled);
+										ShooterController->MyPlayerState->Betrayals += 1;
+										ClientUpdateKillFeedMessage(FName(*KillFeedMessage));
+									}
 								}
+
 							}
-							//}
-
-
 						}
+
 
 
 						////////////////////////////////////////////////////////////////////////////////////////////////
@@ -536,13 +560,13 @@ void AFPSGameState::Update()
 
 										if (ps2->Team->TeamNumber != 0)
 										{
-											if (OtherController->MyPlayerState) {
-												if (FGenericPlatformMath::Abs(ps2->Team->TeamScore - ps->Team->TeamScore) < RivalDifference)
-												{
-													MyRival = OtherController;
-													RivalDifference = (FGenericPlatformMath::Abs(ps2->Team->TeamScore - ps->Team->TeamScore));
-												}
+											
+											if (FGenericPlatformMath::Abs(ps2->Team->TeamScore - ps->Team->TeamScore) < RivalDifference)
+											{
+												MyRival = OtherController;
+												RivalDifference = (FGenericPlatformMath::Abs(ps2->Team->TeamScore - ps->Team->TeamScore));
 											}
+											
 										}
 									}
 								}
@@ -550,6 +574,7 @@ void AFPSGameState::Update()
 						}
 					}
 				}
+				UE_LOG(LogClass, Log, TEXT("Rival Difference: %d"),RivalDifference);
 				if (MyRival != NULL)
 				{
 					if (AFPSPlayerState* Rivalps = Cast<AFPSPlayerState>(MyRival->PlayerState))
