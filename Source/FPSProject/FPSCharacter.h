@@ -5,6 +5,9 @@
 #include "Engine.h"
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h"
+#include "BaseGrenade.h"
+#include "FragGrenade.h"
+
 #include "Runtime/Engine/Public/CollisionQueryParams.h"
 #include "FPSGameState.h"
 #include "Gun.h"
@@ -41,7 +44,13 @@ public:
 		void ShowEnemyName(class AFPSCharacter* Enemy);
 	UFUNCTION(BlueprintImplementableEvent)
 		void ShowEnemyNameBluePrint(class AFPSCharacter* Enemy);
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	TArray<ABaseGrenade*> Grenades;
+	UPROPERTY(EditAnywhere)	
+		TSubclassOf<ABaseGrenade> FragSUB;
 
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ThrowGrenade();
 
 	FTimerHandle UpdateTimer;
 	UFUNCTION(NetMultiCast, Reliable, WithValidation)

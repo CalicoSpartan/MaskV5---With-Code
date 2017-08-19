@@ -574,7 +574,7 @@ void AFPSGameState::Update()
 						}
 					}
 				}
-				UE_LOG(LogClass, Log, TEXT("Rival Difference: %d"),RivalDifference);
+				
 				if (MyRival != NULL)
 				{
 					if (AFPSPlayerState* Rivalps = Cast<AFPSPlayerState>(MyRival->PlayerState))

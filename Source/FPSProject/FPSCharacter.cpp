@@ -668,6 +668,15 @@ void AFPSCharacter::PickupEquipment()
 								}
 							}
 						}
+
+						if (ABaseGrenade* const Grenade = Cast<ABaseGrenade>(PossibleEquipment[i]))
+						{
+							if (!Grenade->IsPendingKill())
+							{
+								Grenades.Add(Grenade);
+								Grenade->Destroy();
+							}
+						}
 					}
 					//}
 				}
@@ -753,6 +762,15 @@ void AFPSCharacter::ServerPickupEquipment_Implementation()
 								}
 							}
 						}
+					}
+				}
+				if (ABaseGrenade* const Grenade = Cast<ABaseGrenade>(PossibleEquipment[i]))
+				{
+					if (!Grenade->IsPendingKill())
+					{
+						
+						Grenades.Add(Grenade);
+						Grenade->Destroy();
 					}
 				}
 			}
@@ -942,6 +960,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAxis("LookUp", this, &AFPSCharacter::AddControllerPitchInput);
 
 	// Set up "action" bindings.
+	PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &AFPSCharacter::ThrowGrenade);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFPSCharacter::ServerReload);
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &AFPSCharacter::ServerOnZoom);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &AFPSCharacter::ServerOnStopZoom);
@@ -950,7 +969,40 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AFPSCharacter::PickupWeapon);
 	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AFPSCharacter::OnShoot);
 	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &AFPSCharacter::OnStopShoot);
+	
 }
+
+bool AFPSCharacter::ThrowGrenade_Validate()
+{
+	return true;
+}
+void AFPSCharacter::ThrowGrenade_Implementation()
+{
+	
+	if (Grenades.Num() > 0)
+	{
+		if (Grenades[0] != NULL)
+
+		{
+			
+			if (AFragGrenade* const frag = Cast<AFragGrenade>(Grenades[0]))
+			{
+				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(FragSUB, FPSCameraComponent->GetComponentLocation() + FPSCameraComponent->GetForwardVector() * 10.0f, FRotator::ZeroRotator);
+				UE_LOG(LogClass, Log, TEXT("WORKED"));
+			}
+			
+
+			//ABaseGrenade* Grenade = GetWorld()->SpawnActor(Grenades[0]->StaticClass->GetFName(), NAME_None, FPSCameraComponent->GetComponentLocation() + FPSCameraComponent->GetForwardVector() * 10.0f, FRotator::ZeroRotator);
+			//UE_LOG(LogClass, Log, TEXT("%s"),*Grenades[0]->StaticClass()->GetName());
+			//Grenades[0] = GetWorld()
+		}
+		else
+		{
+			UE_LOG(LogClass, Log, TEXT("Grenade does not exist"));
+		}
+	}
+}
+
 bool AFPSCharacter::ServerReload_Validate()
 {
 	return true;
