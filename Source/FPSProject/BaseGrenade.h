@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Engine/StaticMeshActor.h"
 #include "BaseGrenade.generated.h"
 
@@ -19,11 +20,13 @@ class FPSPROJECT_API ABaseGrenade : public AStaticMeshActor
 public:
 	ABaseGrenade();
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(Replicated,EditAnywhere)
 		class USphereComponent* SphereCollider;
 
 	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
 		bool bInstantExplode;
+	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
+		bool bPendingExplode;
 	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
 		FTimerHandle ExplosionTimer;
 	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
@@ -35,9 +38,14 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
 		float ExplosionDelay;
 
-	
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+		void EnablePhysics();
+
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+		void Thrown(FVector Force);
+
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void SetExplosionTimer();
 	UFUNCTION(NetMulticast, Reliable)
 		void Explode();

@@ -39,6 +39,10 @@ public:
 		void Update();
 	UPROPERTY(EditAnywhere, Category = "Update")
 		float UpdateDelay;
+	UPROPERTY(Replicated,EditAnywhere, Category = "Grenade")
+		float GrenadeThrowStrength = 30.0f;
+	UPROPERTY(Replicated,EditAnywhere, Category = "Grenade")
+		float GrenadeThrowUpForce = 30.0f;
 
 	UFUNCTION(NetMulticast, Reliable)
 		void ShowEnemyName(class AFPSCharacter* Enemy);

@@ -671,7 +671,7 @@ void AFPSCharacter::PickupEquipment()
 
 						if (ABaseGrenade* const Grenade = Cast<ABaseGrenade>(PossibleEquipment[i]))
 						{
-							if (!Grenade->IsPendingKill())
+							if (!Grenade->IsPendingKill() && !Grenade->bPendingExplode)
 							{
 								Grenades.Add(Grenade);
 								Grenade->Destroy();
@@ -766,7 +766,7 @@ void AFPSCharacter::ServerPickupEquipment_Implementation()
 				}
 				if (ABaseGrenade* const Grenade = Cast<ABaseGrenade>(PossibleEquipment[i]))
 				{
-					if (!Grenade->IsPendingKill())
+					if (!Grenade->IsPendingKill() && !Grenade->bPendingExplode)
 					{
 						
 						Grenades.Add(Grenade);
@@ -837,7 +837,8 @@ void AFPSCharacter::SetHitData_Implementation(float Force, FName Bone, FVector D
 void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
+	DOREPLIFETIME(AFPSCharacter, GrenadeThrowStrength);
+	DOREPLIFETIME(AFPSCharacter, GrenadeThrowUpForce);
 	DOREPLIFETIME(AFPSCharacter, simASV);
 	DOREPLIFETIME(AFPSCharacter, FPSMesh);
 	DOREPLIFETIME(AFPSCharacter, FPSCameraComponent);
@@ -987,8 +988,15 @@ void AFPSCharacter::ThrowGrenade_Implementation()
 			
 			if (AFragGrenade* const frag = Cast<AFragGrenade>(Grenades[0]))
 			{
-				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(FragSUB, FPSCameraComponent->GetComponentLocation() + FPSCameraComponent->GetForwardVector() * 10.0f, FRotator::ZeroRotator);
-				UE_LOG(LogClass, Log, TEXT("WORKED"));
+				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(FragSUB, FPSCameraComponent->GetComponentLocation() + FPSCameraComponent->GetForwardVector() * 10.0, FRotator::ZeroRotator);
+				
+				Grenade->EnablePhysics();
+				UE_LOG(LogClass, Log, TEXT("ThrowStrength: %f"),GrenadeThrowStrength);
+				UE_LOG(LogClass, Log, TEXT("ThrowVector: %s"),*FVector(FPSCameraComponent->GetForwardVector() * GrenadeThrowStrength + FVector(0, 0, GrenadeThrowUpForce)).ToString());
+				Grenade->Thrown(FPSCameraComponent->GetForwardVector() * GrenadeThrowStrength + FVector(0, 0, GrenadeThrowUpForce));
+				
+
+				
 			}
 			
 
