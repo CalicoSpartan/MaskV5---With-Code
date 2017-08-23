@@ -39,6 +39,8 @@ void ABaseGrenade::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(ABaseGrenade, bInstantExplode);
 	DOREPLIFETIME(ABaseGrenade, MaxDamage);
 	DOREPLIFETIME(ABaseGrenade, bPendingExplode);
+	DOREPLIFETIME(ABaseGrenade, GrenadeThrower);
+	DOREPLIFETIME(ABaseGrenade, ExplosionForce);
 
 }
 bool ABaseGrenade::EnablePhysics_Validate()
@@ -57,16 +59,27 @@ bool ABaseGrenade::SetExplosionTimer_Validate()
 	return true;
 }
 
-bool ABaseGrenade::Thrown_Validate(FVector Force)
+bool ABaseGrenade::Thrown_Validate(FVector Force, APawn* Thrower)
 {
 	return true;
 }
-void ABaseGrenade::Thrown_Implementation(FVector Force)
+void ABaseGrenade::Thrown_Implementation(FVector Force, APawn* Thrower)
 {
 	if (!bInstantExplode)
 	{
 		SetExplosionTimer();
 	}
+	GrenadeThrower = Thrower;
+	SphereCollider->IgnoreActorWhenMoving(Thrower, true);
+	GetStaticMeshComponent()->IgnoreActorWhenMoving(Thrower, true);
+	if (AFPSCharacter* Character = Cast<AFPSCharacter>(Thrower))
+	{
+		SphereCollider->IgnoreComponentWhenMoving(Character->GetMesh(), true);
+		SphereCollider->IgnoreComponentWhenMoving(Character->GetCapsuleComponent(), true);
+		GetStaticMeshComponent()->IgnoreComponentWhenMoving(Character->GetMesh(), true);
+		GetStaticMeshComponent()->IgnoreComponentWhenMoving(Character->GetCapsuleComponent(), true);
+	}
+	
 	GetStaticMeshComponent()->AddForce(Force);
 	UE_LOG(LogClass, Log, TEXT("WORKED"));
 }
@@ -77,6 +90,13 @@ void ABaseGrenade::SetExplosionTimer_Implementation()
 	bPendingExplode = true;
 	GetWorld()->GetTimerManager().SetTimer(ExplosionTimer, this, &ABaseGrenade::Explode, ExplosionDelay, false);
 }
+
+bool ABaseGrenade::Explode_Validate()
+{
+	return true;
+}
+
+
 void ABaseGrenade::Explode_Implementation()
 {
 	GetWorld()->GetTimerManager().ClearTimer(ExplosionTimer);
@@ -89,6 +109,23 @@ void ABaseGrenade::Explode_Implementation()
 		{
 			if (AFPSCharacter* const Character = Cast<AFPSCharacter>(PossiblePlayers[i]))
 			{
+				FVector dirtoplayer = Character->GetActorLocation() - GetActorLocation();
+				float disttoplayer = dirtoplayer.Size();
+				float oppositedamagepercent = disttoplayer / BlastRadius;
+				float damagepercent = 1.0f - oppositedamagepercent;
+				if (damagepercent > 1.0f)
+				{
+					damagepercent = 1.0f;
+				}
+				if (damagepercent < 0.1f)
+				{
+					damagepercent = 0.1f;
+				}
+				Character->Shooter = GrenadeThrower;
+				Character->SetHitData(ExplosionForce, NAME_None, dirtoplayer.GetSafeNormal());
+				Character->ServerChangeHealthBy(-MaxDamage * damagepercent);
+				Character->TriggerUpdateUI();
+				UE_LOG(LogClass, Log, TEXT("DistanceToPlayer: %f"), disttoplayer);
 				UE_LOG(LogClass, Log, TEXT("Hit Player: %s"),*Character->GetName());
 			}
 		}

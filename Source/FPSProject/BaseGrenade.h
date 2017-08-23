@@ -36,18 +36,22 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
 		float Mass;
 	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
+		float ExplosionForce = 500000.0f;
+	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
 		float ExplosionDelay;
+	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
+		APawn* GrenadeThrower;
 
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void EnablePhysics();
 
-	UFUNCTION(NetMulticast, Reliable, WithValidation)
-		void Thrown(FVector Force);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void Thrown(FVector Force,APawn* Thrower);
 
-	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable, WithValidation)
 		void SetExplosionTimer();
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(Server, Reliable,WithValidation)
 		void Explode();
 	UFUNCTION()
 		void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);

@@ -168,10 +168,16 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 	//disable collisions on the capsule
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
-	if (LastHitBone != "" && LastHitForce != NULL && LastHitDirection != FVector::ZeroVector)
+	if (LastHitForce != NULL && LastHitDirection != FVector::ZeroVector)
 	{
-		
-		GetMesh()->AddForce(LastHitDirection * LastHitForce,LastHitBone);
+		if (LastHitBone != "")
+		{
+			GetMesh()->AddForce(LastHitDirection * LastHitForce, LastHitBone);
+		}
+		else
+		{
+			GetMesh()->AddForce(LastHitDirection);
+		}
 	}
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
@@ -993,7 +999,7 @@ void AFPSCharacter::ThrowGrenade_Implementation()
 				Grenade->EnablePhysics();
 				UE_LOG(LogClass, Log, TEXT("ThrowStrength: %f"),GrenadeThrowStrength);
 				UE_LOG(LogClass, Log, TEXT("ThrowVector: %s"),*FVector(FPSCameraComponent->GetForwardVector() * GrenadeThrowStrength + FVector(0, 0, GrenadeThrowUpForce)).ToString());
-				Grenade->Thrown(FPSCameraComponent->GetForwardVector() * GrenadeThrowStrength + FVector(0, 0, GrenadeThrowUpForce));
+				Grenade->Thrown(FPSCameraComponent->GetForwardVector() * GrenadeThrowStrength + FVector(0, 0, GrenadeThrowUpForce),this);
 				
 
 				
