@@ -14,6 +14,7 @@ ABaseGrenade::ABaseGrenade()
 	bInstantExplode = false;
 	ExplosionDelay = 3.0f;
 	BlastRadius = 200.0f;
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 	SphereCollider = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollider"));
 	SphereCollider->SetSimulatePhysics(false);
 	SphereCollider->SetupAttachment(RootComponent);
@@ -41,18 +42,25 @@ void ABaseGrenade::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(ABaseGrenade, bPendingExplode);
 	DOREPLIFETIME(ABaseGrenade, GrenadeThrower);
 	DOREPLIFETIME(ABaseGrenade, ExplosionForce);
+	DOREPLIFETIME(ABaseGrenade, MaxDamageBlastRadius);
+	DOREPLIFETIME(ABaseGrenade, ProjectileMovement);
 
 }
-bool ABaseGrenade::EnablePhysics_Validate()
+bool ABaseGrenade::EnablePhysics_Validate(APawn* Thrower)
 {
 	return true;
 }
-void ABaseGrenade::EnablePhysics_Implementation()
+void ABaseGrenade::EnablePhysics_Implementation(APawn* Thrower)
 {
 	SetMobility(EComponentMobility::Movable);
-	GetStaticMeshComponent()->SetSimulatePhysics(true);
+	//GetStaticMeshComponent()->SetSimulatePhysics(true);
 	GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
 	SphereCollider->SetMobility(EComponentMobility::Movable);
+	SphereCollider->IgnoreActorWhenMoving(Thrower, true);
+	GetStaticMeshComponent()->IgnoreActorWhenMoving(Thrower, true);
+	
+	UE_LOG(LogClass, Log, TEXT("Sphere Collider Ignored Actors Length: %d"),SphereCollider->GetMoveIgnoreActors().Num());
+
 }
 bool ABaseGrenade::SetExplosionTimer_Validate()
 {
@@ -70,15 +78,8 @@ void ABaseGrenade::Thrown_Implementation(FVector Force, APawn* Thrower)
 		SetExplosionTimer();
 	}
 	GrenadeThrower = Thrower;
-	SphereCollider->IgnoreActorWhenMoving(Thrower, true);
-	GetStaticMeshComponent()->IgnoreActorWhenMoving(Thrower, true);
-	if (AFPSCharacter* Character = Cast<AFPSCharacter>(Thrower))
-	{
-		SphereCollider->IgnoreComponentWhenMoving(Character->GetMesh(), true);
-		SphereCollider->IgnoreComponentWhenMoving(Character->GetCapsuleComponent(), true);
-		GetStaticMeshComponent()->IgnoreComponentWhenMoving(Character->GetMesh(), true);
-		GetStaticMeshComponent()->IgnoreComponentWhenMoving(Character->GetCapsuleComponent(), true);
-	}
+
+	
 	
 	GetStaticMeshComponent()->AddForce(Force);
 	UE_LOG(LogClass, Log, TEXT("WORKED"));
@@ -120,6 +121,10 @@ void ABaseGrenade::Explode_Implementation()
 				if (damagepercent < 0.1f)
 				{
 					damagepercent = 0.1f;
+				}
+				if (disttoplayer <= MaxDamageBlastRadius)
+				{
+					damagepercent = 1.0f;
 				}
 				Character->Shooter = GrenadeThrower;
 				Character->SetHitData(ExplosionForce, NAME_None, dirtoplayer.GetSafeNormal());

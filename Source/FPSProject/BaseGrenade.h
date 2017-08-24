@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SphereComponent.h"
+#include "Runtime/Engine/Classes/GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/StaticMeshActor.h"
 #include "BaseGrenade.generated.h"
@@ -22,6 +23,8 @@ public:
 
 	UPROPERTY(Replicated,EditAnywhere)
 		class USphereComponent* SphereCollider;
+	UPROPERTY(Replicated, EditAnywhere)
+		class UProjectileMovementComponent* ProjectileMovement;
 
 	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
 		bool bInstantExplode;
@@ -31,6 +34,8 @@ public:
 		FTimerHandle ExplosionTimer;
 	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
 		float BlastRadius;
+	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
+		float MaxDamageBlastRadius;
 	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
 		float MaxDamage;
 	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
@@ -44,14 +49,14 @@ public:
 
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
-		void EnablePhysics();
+		void EnablePhysics(APawn* Thrower);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void Thrown(FVector Force,APawn* Thrower);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void SetExplosionTimer();
-	UFUNCTION(Server, Reliable,WithValidation)
+	UFUNCTION(NetMulticast, Reliable,WithValidation)
 		void Explode();
 	UFUNCTION()
 		void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
