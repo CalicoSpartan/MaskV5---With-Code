@@ -23,6 +23,8 @@ public:
 
 	UPROPERTY(Replicated,EditAnywhere)
 		class USphereComponent* SphereCollider;
+	//UPROPERTY(Replicated, EditAnywhere)
+		//class USceneComponent* MyRoot;
 	UPROPERTY(Replicated, EditAnywhere)
 		class UProjectileMovementComponent* ProjectileMovement;
 

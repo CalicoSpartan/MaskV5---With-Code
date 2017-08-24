@@ -1001,7 +1001,7 @@ void AFPSCharacter::ThrowGrenade_Implementation()
 				UE_LOG(LogClass, Log, TEXT("ThrowStrength: %f"),GrenadeThrowStrength);
 				UE_LOG(LogClass, Log, TEXT("ThrowVector: %s"),*FVector(FPSCameraComponent->GetForwardVector() * GrenadeThrowStrength + FVector(0, 0, GrenadeThrowUpForce)).ToString());
 				Grenade->Thrown(FPSCameraComponent->GetForwardVector() * GrenadeThrowStrength + FVector(0, 0, GrenadeThrowUpForce),this);
-				Grenade->SphereCollider->IgnoreActorWhenMoving(this, true);
+				//Grenade->SphereCollider->IgnoreActorWhenMoving(this, true);
 				Grenade->GetStaticMeshComponent()->IgnoreActorWhenMoving(this, true);
 				GetMesh()->IgnoreActorWhenMoving(Grenade, true);
 				GetCapsuleComponent()->IgnoreActorWhenMoving(Grenade, true);

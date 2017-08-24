@@ -15,10 +15,16 @@ ABaseGrenade::ABaseGrenade()
 	ExplosionDelay = 3.0f;
 	BlastRadius = 200.0f;
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
+
+	
+
 	SphereCollider = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollider"));
 	SphereCollider->SetSimulatePhysics(false);
-	SphereCollider->SetupAttachment(RootComponent);
+	
+	RootComponent = SphereCollider;
+
 	GetStaticMeshComponent()->SetSimulatePhysics(false);
+	GetStaticMeshComponent()->SetupAttachment(SphereCollider);
 	GetStaticMeshComponent()->bGenerateOverlapEvents = true;
 	GetStaticMeshComponent()->OnComponentBeginOverlap.AddDynamic(this, &ABaseGrenade::OnOverlapBegin);
 
@@ -55,11 +61,11 @@ void ABaseGrenade::EnablePhysics_Implementation(APawn* Thrower)
 	SetMobility(EComponentMobility::Movable);
 	//GetStaticMeshComponent()->SetSimulatePhysics(true);
 	GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
-	SphereCollider->SetMobility(EComponentMobility::Movable);
-	SphereCollider->IgnoreActorWhenMoving(Thrower, true);
+	//SphereCollider->SetMobility(EComponentMobility::Movable);
+	//SphereCollider->IgnoreActorWhenMoving(Thrower, true);
 	GetStaticMeshComponent()->IgnoreActorWhenMoving(Thrower, true);
 	
-	UE_LOG(LogClass, Log, TEXT("Sphere Collider Ignored Actors Length: %d"),SphereCollider->GetMoveIgnoreActors().Num());
+	//UE_LOG(LogClass, Log, TEXT("Sphere Collider Ignored Actors Length: %d"),SphereCollider->GetMoveIgnoreActors().Num());
 
 }
 bool ABaseGrenade::SetExplosionTimer_Validate()
