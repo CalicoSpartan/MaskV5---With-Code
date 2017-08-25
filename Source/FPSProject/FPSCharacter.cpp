@@ -994,13 +994,13 @@ void AFPSCharacter::ThrowGrenade_Implementation()
 			
 			if (AFragGrenade* const frag = Cast<AFragGrenade>(Grenades[0]))
 			{
-				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(FragSUB, FPSCameraComponent->GetComponentLocation() + FPSCameraComponent->GetForwardVector() * 10.0, FRotator::ZeroRotator);
+				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(FragSUB, FPSCameraComponent->GetComponentLocation() + FPSCameraComponent->GetForwardVector() * 100.0, FRotator::ZeroRotator);
 				MoveIgnoreActorAdd(Grenade);
 
 				
 				UE_LOG(LogClass, Log, TEXT("ThrowStrength: %f"),GrenadeThrowStrength);
 				UE_LOG(LogClass, Log, TEXT("ThrowVector: %s"),*FVector(FPSCameraComponent->GetForwardVector() * GrenadeThrowStrength + FVector(0, 0, GrenadeThrowUpForce)).ToString());
-				Grenade->Thrown(FPSCameraComponent->GetForwardVector() * GrenadeThrowStrength + FVector(0, 0, GrenadeThrowUpForce),this);
+				Grenade->Thrown(FPSCameraComponent->GetForwardVector() + FVector(0, 0, GrenadeThrowUpForce),GrenadeThrowStrength,this);
 				
 				
 

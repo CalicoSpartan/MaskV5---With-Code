@@ -54,7 +54,7 @@ public:
 		void EnablePhysics(APawn* Thrower);
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
-		void Thrown(FVector Force,APawn* Thrower);
+		void Thrown(FVector Direction,float Force,APawn* Thrower);
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void SetExplosionTimer();

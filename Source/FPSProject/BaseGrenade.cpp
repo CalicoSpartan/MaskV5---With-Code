@@ -67,11 +67,11 @@ bool ABaseGrenade::SetExplosionTimer_Validate()
 	return true;
 }
 
-bool ABaseGrenade::Thrown_Validate(FVector Force, APawn* Thrower)
+bool ABaseGrenade::Thrown_Validate(FVector Direction,float Force, APawn* Thrower)
 {
 	return true;
 }
-void ABaseGrenade::Thrown_Implementation(FVector Force, APawn* Thrower)
+void ABaseGrenade::Thrown_Implementation(FVector Direction,float Force, APawn* Thrower)
 {
 	if (!bInstantExplode)
 	{
@@ -79,12 +79,16 @@ void ABaseGrenade::Thrown_Implementation(FVector Force, APawn* Thrower)
 	}
 	GrenadeThrower = Thrower;
 
+	//ProjectileMovement->Activate(true);
+	//ProjectileMovement->ProjectileGravityScale = 1.0f;
+	//GetStaticMeshComponent()->IgnoreActorWhenMoving(Thrower, true);
 	
-	GetStaticMeshComponent()->IgnoreActorWhenMoving(Thrower, true);
-	//ProjectileMovement->Velocity = Force.GetSafeNormal();
-	//ProjectileMovement->InitialSpeed = 1000.0f;
-	//ProjectileMovement->MaxSpeed = 3000.0f;
-	UE_LOG(LogClass, Log, TEXT("WORKED"));
+	ProjectileMovement->SetVelocityInLocalSpace(Direction.GetSafeNormal() * Force);
+	ProjectileMovement->InitialSpeed = Force;
+	ProjectileMovement->MaxSpeed = Force * 1.5f;
+	
+	UE_LOG(LogClass, Log, TEXT("Velocity: %s"), *ProjectileMovement->Velocity.ToString());
+	UE_LOG(LogClass, Log, TEXT("InitialSpeed: %f"),ProjectileMovement->InitialSpeed);
 }
 
 
