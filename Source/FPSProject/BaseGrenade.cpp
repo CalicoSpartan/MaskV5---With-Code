@@ -24,7 +24,8 @@ ABaseGrenade::ABaseGrenade()
 	RootComponent = SphereCollider;
 
 	GetStaticMeshComponent()->SetSimulatePhysics(false);
-	GetStaticMeshComponent()->SetupAttachment(SphereCollider);
+	GetStaticMeshComponent()->SetupAttachment(RootComponent);
+	GetStaticMeshComponent()->SetRelativeLocation(FVector(0, 0, 0));
 	GetStaticMeshComponent()->bGenerateOverlapEvents = true;
 	GetStaticMeshComponent()->OnComponentBeginOverlap.AddDynamic(this, &ABaseGrenade::OnOverlapBegin);
 
@@ -58,14 +59,7 @@ bool ABaseGrenade::EnablePhysics_Validate(APawn* Thrower)
 }
 void ABaseGrenade::EnablePhysics_Implementation(APawn* Thrower)
 {
-	SetMobility(EComponentMobility::Movable);
-	//GetStaticMeshComponent()->SetSimulatePhysics(true);
-	GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
-	//SphereCollider->SetMobility(EComponentMobility::Movable);
-	//SphereCollider->IgnoreActorWhenMoving(Thrower, true);
-	GetStaticMeshComponent()->IgnoreActorWhenMoving(Thrower, true);
-	
-	//UE_LOG(LogClass, Log, TEXT("Sphere Collider Ignored Actors Length: %d"),SphereCollider->GetMoveIgnoreActors().Num());
+
 
 }
 bool ABaseGrenade::SetExplosionTimer_Validate()
@@ -86,8 +80,10 @@ void ABaseGrenade::Thrown_Implementation(FVector Force, APawn* Thrower)
 	GrenadeThrower = Thrower;
 
 	
-	
-	GetStaticMeshComponent()->AddForce(Force);
+	GetStaticMeshComponent()->IgnoreActorWhenMoving(Thrower, true);
+	//ProjectileMovement->Velocity = Force.GetSafeNormal();
+	//ProjectileMovement->InitialSpeed = 1000.0f;
+	//ProjectileMovement->MaxSpeed = 3000.0f;
 	UE_LOG(LogClass, Log, TEXT("WORKED"));
 }
 
